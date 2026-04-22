@@ -2,613 +2,363 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SAS Gestión">
 <title>SAS · Smart Aircraft Services</title>
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── SAS COLOR TOKENS ── */
-:root {
-  --cyan:        #00B4D8;
-  --cyan-dim:    #0096B8;
-  --cyan-bg:     #e6f7fb;
-  --cyan-bg2:    #cceef5;
-  --navy:        #2D3E50;
-  --navy-mid:    #3a5068;
-  --navy-light:  #4a6480;
+:root{
+  --cyan:#00B4D8;--cyan-dim:#0096B8;--cyan-bg:#e6f7fb;--cyan-bg2:#cceef5;
+  --navy:#2D3E50;--navy-mid:#3a5068;
+  --bg:#f4f6f8;--bg-deep:#eaecef;--surface:#fff;--surface-2:#f8f9fa;
+  --border:#dde1e7;--border-soft:#e8eaed;
+  --text:#1a2530;--text-2:#4a5568;--text-3:#8a97a6;
+  --green:#1a7a4a;--green-bg:#e3f5ec;
+  --red:#c0392b;--red-bg:#fdeaea;
+  --amber:#7a5a00;--amber-bg:#fef8e1;
+  --purple:#6d28d9;--purple-bg:#ede9fe;
+  --sidebar-w:252px;--radius:10px;--radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.04);
+  --shadow-md:0 2px 10px rgba(0,0,0,.09),0 8px 32px rgba(0,0,0,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;display:flex;}
 
-  --bg:          #f4f6f8;
-  --bg-deep:     #eaecef;
-  --surface:     #ffffff;
-  --surface-2:   #f8f9fa;
-  --border:      #dde1e7;
-  --border-soft: #e8eaed;
+/* LOGIN */
+#login-screen{display:flex;position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#1a3a50 100%);align-items:center;justify-content:center;}
+.login-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;backdrop-filter:blur(10px);box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center;}
+.login-logo-icon{width:64px;height:64px;margin:0 auto 12px;background:var(--cyan);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.login-box h1{font-family:'Crimson Pro',serif;font-size:22px;color:white;margin-bottom:4px;}
+.login-box p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:24px;}
+.lf{margin-bottom:13px;text-align:left;}
+.lf label{display:block;font-size:11.5px;color:rgba(255,255,255,.5);margin-bottom:4px;font-weight:500;}
+.lf input{width:100%;padding:10px 13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:9px;color:white;font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;}
+.lf input:focus{border-color:var(--cyan);}
+.lf input::placeholder{color:rgba(255,255,255,.25);}
+.login-btn{width:100%;padding:11px;border-radius:9px;border:none;background:var(--cyan);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;}
+.login-btn:hover{background:var(--cyan-dim);}
+.login-error{color:#ff8a8a;font-size:12px;margin-top:8px;display:none;}
 
-  --text:        #1a2530;
-  --text-2:      #4a5568;
-  --text-3:      #8a97a6;
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .25s ease;overflow-y:auto;}
+.sidebar-logo{padding:16px 14px 13px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.logo-mark{width:34px;height:34px;background:var(--cyan);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.logo-name{font-family:'Crimson Pro',serif;font-size:14.5px;font-weight:600;color:#fff;line-height:1.2;}
+.logo-sub{font-size:9.5px;color:rgba(255,255,255,.38);margin-top:1px;}
+.sb-sec{padding:12px 8px 3px;}
+.sb-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.28);padding:0 8px;margin-bottom:3px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;color:rgba(255,255,255,.52);font-size:13px;font-weight:400;transition:background .15s,color .15s;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.88);}
+.nav-item.active{background:rgba(0,180,216,.18);color:var(--cyan);font-weight:500;}
+.nav-icon{font-size:14px;width:19px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--cyan);color:var(--navy);font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:20px;min-width:17px;text-align:center;}
 
-  --green:       #1a7a4a;
-  --green-bg:    #e3f5ec;
-  --red:         #c0392b;
-  --red-bg:      #fdeaea;
-  --amber:       #7a5a00;
-  --amber-bg:    #fef8e1;
+/* GCAL BUTTON IN SIDEBAR */
+.gcal-section{padding:8px 8px 4px;border-top:1px solid rgba(255,255,255,.08);}
+.gcal-btn{width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;text-align:center;}
+.gcal-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);}
+.gcal-btn.connected{border-color:#22c55e;color:#86efac;background:rgba(34,197,94,.08);}
+.gcal-sync-btn{width:100%;margin-top:5px;padding:7px 12px;border-radius:9px;border:1px solid rgba(0,180,216,.3);background:rgba(0,180,216,.08);color:var(--cyan);font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;display:none;transition:all .2s;}
+.gcal-sync-btn:hover{background:rgba(0,180,216,.16);}
 
-  --sidebar-w:   248px;
-  --radius:      10px;
-  --radius-lg:   14px;
-  --shadow:      0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.04);
-  --shadow-md:   0 2px 10px rgba(0,0,0,.09), 0 8px 32px rgba(0,0,0,.07);
-}
+.sb-voice{padding:8px 8px;border-top:1px solid rgba(255,255,255,.08);}
+.voice-btn{width:100%;padding:9px 13px;border-radius:9px;border:1.5px solid rgba(0,180,216,.35);background:rgba(0,180,216,.07);color:var(--cyan);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;}
+.voice-btn:hover{background:rgba(0,180,216,.15);}
+.voice-btn.listening{background:rgba(0,180,216,.2);border-color:var(--cyan);animation:pborder 1.2s ease-in-out infinite;}
+@keyframes pborder{0%,100%{box-shadow:0 0 0 0 rgba(0,180,216,.4);}50%{box-shadow:0 0 0 5px rgba(0,180,216,0);}}
+.wave-bars{display:none;align-items:center;gap:2px;height:14px;}
+.voice-btn.listening .wave-bars{display:flex;}
+.voice-btn.listening .vl{display:none;}
+.wb{width:3px;border-radius:2px;background:var(--cyan);animation:wave .8s ease-in-out infinite;}
+.wb:nth-child(1){height:4px;animation-delay:0s;}.wb:nth-child(2){height:9px;animation-delay:.1s;}.wb:nth-child(3){height:14px;animation-delay:.2s;}.wb:nth-child(4){height:9px;animation-delay:.3s;}.wb:nth-child(5){height:4px;animation-delay:.4s;}
+@keyframes wave{0%,100%{transform:scaleY(1);}50%{transform:scaleY(1.7);}}
+.sb-foot{padding:8px 8px 12px;border-top:1px solid rgba(255,255,255,.08);}
+.date-chip{background:rgba(255,255,255,.05);border-radius:7px;padding:7px 9px;font-size:11.5px;color:rgba(255,255,255,.45);}
+.date-chip strong{display:block;color:rgba(255,255,255,.82);font-size:12.5px;}
 
-* { margin:0; padding:0; box-sizing:border-box; }
+/* MAIN */
+.main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(244,246,248,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:11px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.topbar-left{display:flex;align-items:center;gap:9px;}
+.topbar-title{font-family:'Crimson Pro',serif;font-size:19px;font-weight:500;color:var(--navy);}
+.topbar-right{display:flex;gap:7px;align-items:center;}
+.topbar-mic{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-3);font-size:12px;font-weight:500;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.topbar-mic:hover,.topbar-mic.listening{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-bg);}
+.logout-btn{display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text-3);font-size:11.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.content{padding:22px 24px;flex:1;}
+.section{display:none;}.section.active{display:block;}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  min-height: 100vh;
-  display: flex;
-}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
+.card-title{font-size:12px;font-weight:700;color:var(--text-2);letter-spacing:.04em;text-transform:uppercase;}
+.card-body{padding:15px 16px;}
 
-/* ── SIDEBAR ── */
-.sidebar {
-  width: var(--sidebar-w);
-  background: var(--navy);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 50;
-  transition: transform .25s ease;
-}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.sc-cyan::before{background:var(--cyan);}.sc-amber::before{background:#e6a800;}.sc-green::before{background:var(--green);}.sc-red::before{background:var(--red);}
+.stat-label{font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px;}
+.stat-value{font-family:'Crimson Pro',serif;font-size:32px;font-weight:500;line-height:1;margin-bottom:2px;}
+.stat-sub{font-size:11px;color:var(--text-3);}
+.sc-cyan .stat-value{color:var(--cyan-dim);}.sc-amber .stat-value{color:#b07800;}.sc-green .stat-value{color:var(--green);}.sc-red .stat-value{color:var(--red);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
 
-.sidebar-logo {
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.logo-svg {
-  width: 38px; height: 38px;
-  flex-shrink: 0;
-}
-.logo-text-wrap { display: flex; flex-direction: column; }
-.logo-name {
-  font-family: 'Crimson Pro', serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: .01em;
-  line-height: 1.2;
-}
-.logo-sub {
-  font-size: 10px;
-  color: rgba(255,255,255,.45);
-  letter-spacing: .04em;
-  margin-top: 1px;
-}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.b-cyan{background:var(--cyan-bg2);color:var(--cyan-dim);}.b-amber{background:var(--amber-bg);color:var(--amber);}.b-green{background:var(--green-bg);color:var(--green);}.b-red{background:var(--red-bg);color:var(--red);}.b-purple{background:var(--purple-bg);color:var(--purple);}.b-muted{background:var(--bg-deep);color:var(--text-3);}
 
-.sidebar-section { padding: 16px 10px 4px; }
-.sidebar-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.35);
-  padding: 0 8px;
-  margin-bottom: 4px;
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: rgba(255,255,255,.6);
-  font-size: 13.5px;
-  font-weight: 400;
-  transition: background .15s, color .15s;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-}
-.nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
-.nav-item.active { background: rgba(0,180,216,.18); color: var(--cyan); font-weight: 500; }
-.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
-.nav-badge {
-  margin-left: auto;
-  background: var(--cyan);
-  color: var(--navy);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 20px;
-  min-width: 18px;
-  text-align: center;
-}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap;}
+.btn-primary{background:var(--cyan);color:white;border-color:var(--cyan-dim);}.btn-primary:hover{background:var(--cyan-dim);}
+.btn-ghost{background:var(--surface);color:var(--text-2);border-color:var(--border);}.btn-ghost:hover{background:var(--bg-deep);}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:#f0cccc;}.btn-danger:hover{background:#fbd5d5;}
+.btn-success{background:var(--green-bg);color:var(--green);border-color:#b8ddc9;}
+.btn-gcal{background:#e8f5e9;color:#1a7a4a;border-color:#b8ddc9;}.btn-gcal:hover{background:#d4edda;}
+.btn-sm{padding:3px 9px;font-size:11.5px;border-radius:6px;}
+.btn-navy{background:var(--navy);color:white;}.btn-navy:hover{background:var(--navy-mid);}
 
-/* VOICE BUTTON in sidebar */
-.voice-section {
-  padding: 12px 10px;
-  margin-top: auto;
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-.voice-btn {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(0,180,216,.4);
-  background: rgba(0,180,216,.08);
-  color: var(--cyan);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all .2s;
-  position: relative;
-  overflow: hidden;
-}
-.voice-btn:hover { background: rgba(0,180,216,.16); border-color: var(--cyan); }
-.voice-btn.listening {
-  background: rgba(0,180,216,.22);
-  border-color: var(--cyan);
-  animation: pulse-border 1.2s ease-in-out infinite;
-}
-@keyframes pulse-border {
-  0%,100% { box-shadow: 0 0 0 0 rgba(0,180,216,.4); }
-  50%      { box-shadow: 0 0 0 6px rgba(0,180,216,0); }
-}
-.mic-icon { font-size: 17px; transition: transform .2s; }
-.voice-btn.listening .mic-icon { transform: scale(1.2); }
+/* INPUTS */
+.form-group{margin-bottom:13px;}
+.form-label{display:block;font-size:11.5px;font-weight:600;color:var(--text-2);margin-bottom:4px;}
+input,select,textarea{width:100%;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,180,216,.1);}
+textarea{resize:vertical;min-height:68px;}
 
-.voice-waves {
-  display: none;
-  align-items: center;
-  gap: 2px;
-  height: 16px;
-}
-.voice-btn.listening .voice-waves { display: flex; }
-.voice-btn.listening .voice-label { display: none; }
-.wave-bar {
-  width: 3px; border-radius: 2px;
-  background: var(--cyan);
-  animation: wave 0.8s ease-in-out infinite;
-}
-.wave-bar:nth-child(1) { height: 4px; animation-delay: 0s; }
-.wave-bar:nth-child(2) { height: 10px; animation-delay: .1s; }
-.wave-bar:nth-child(3) { height: 16px; animation-delay: .2s; }
-.wave-bar:nth-child(4) { height: 10px; animation-delay: .3s; }
-.wave-bar:nth-child(5) { height: 4px; animation-delay: .4s; }
-@keyframes wave {
-  0%,100% { transform: scaleY(1); }
-  50%      { transform: scaleY(1.8); }
-}
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{border-bottom:1px solid var(--border);}
+th{text-align:left;padding:8px 11px;font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;}
+td{padding:9px 11px;border-bottom:1px solid var(--border-soft);vertical-align:middle;font-size:12.5px;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surface-2);}
 
-.sidebar-footer {
-  padding: 10px 10px 14px;
-  border-top: 1px solid rgba(255,255,255,.08);
+/* DAYS PILL */
+.dp{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;font-family:'DM Mono',monospace;}
+.dp-u{background:var(--red-bg);color:var(--red);}.dp-w{background:var(--amber-bg);color:var(--amber);}.dp-o{background:var(--green-bg);color:var(--green);}.dp-p{background:var(--bg-deep);color:var(--text-3);}
+
+/* TIMELINE */
+.tl{display:flex;flex-direction:column;}
+.tl-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-soft);align-items:flex-start;}
+.tl-row:last-child{border-bottom:none;}
+.tl-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.dc{background:var(--cyan);}.da{background:#e6a800;}.dg{background:var(--green);}.dr{background:var(--red);}
+.tl-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-3);min-width:36px;margin-top:3px;}
+.tl-body{flex:1;}
+.tl-title{font-size:12.5px;font-weight:500;}
+.tl-meta{font-size:11px;color:var(--text-3);margin-top:1px;}
+
+/* ALERTS */
+.al-row{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-radius:8px;margin-bottom:7px;font-size:12.5px;}
+.al-row:last-child{margin-bottom:0;}
+.al-high{background:var(--red-bg);border:1px solid #f0cccc;}.al-med{background:var(--amber-bg);border:1px solid #f0de9a;}.al-low{background:var(--green-bg);border:1px solid #b8ddc9;}
+.al-icon{font-size:13px;margin-top:1px;flex-shrink:0;}
+.al-text{flex:1;}.al-title{font-weight:600;}.al-sub{font-size:11px;color:var(--text-3);margin-top:1px;}
+.al-done{opacity:.38;}
+
+/* CALENDAR */
+.cal-wrap{font-size:12.5px;}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.cal-nav-row span{font-weight:600;font-size:13px;color:var(--navy);}
+.cal-nav{background:none;border:1px solid var(--border);border-radius:6px;padding:2px 8px;cursor:pointer;color:var(--text-2);font-size:13px;}
+.cal-nav:hover{background:var(--bg-deep);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dn{text-align:center;font-size:9.5px;color:var(--text-3);font-weight:700;padding:3px 0;letter-spacing:.04em;}
+.cal-d{text-align:center;padding:4px 2px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--text);transition:background .12s;position:relative;}
+.cal-d:hover{background:var(--bg-deep);}
+.cal-d.today{background:var(--cyan);color:white;font-weight:600;}
+.cal-d.has-ev::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--cyan);}
+.cal-d.today.has-ev::after{background:rgba(255,255,255,.7);}
+.cal-d.dim{color:var(--text-3);}
+
+/* CONTACT ROW */
+.con-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border-bottom:1px solid var(--border-soft);transition:background .12s;}
+.con-item:last-child{border-bottom:none;}
+.con-item:hover{background:var(--surface-2);}
+.c-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.c-name{font-size:13px;font-weight:500;}.c-sub{font-size:11px;color:var(--text-3);margin-top:1px;}.c-mono{font-size:11px;color:var(--text-3);margin-top:1px;font-family:'DM Mono',monospace;}
+
+/* FOLDER */
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;}
+.folder-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:15px;box-shadow:var(--shadow);cursor:pointer;transition:all .18s;}
+.folder-card:hover{border-color:var(--cyan);box-shadow:0 4px 18px rgba(0,180,216,.12);}
+.fc-icon{font-size:26px;margin-bottom:9px;}
+.fc-id{font-size:13.5px;font-weight:700;color:var(--navy);margin-bottom:3px;font-family:'DM Mono',monospace;}
+.fc-desc{font-size:12px;color:var(--text-2);margin-bottom:6px;}
+.fc-meta{font-size:11px;color:var(--text-3);margin-top:2px;}
+.fc-actions{display:flex;gap:4px;margin-top:10px;}
+
+/* FOLDER TABS */
+.ftabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto;}
+.ftab{padding:8px 14px;font-size:12.5px;font-weight:500;color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.ftab:hover{color:var(--text);}
+.ftab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.ftab-content{display:none;}.ftab-content.active{display:block;}
+
+/* RENGLONES */
+.renglon-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;}
+.renglon-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.renglon-num{background:var(--navy);color:white;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;}
+.renglon-desc{flex:1;font-size:13px;font-weight:600;}
+.suggestion-box{background:var(--amber-bg);border:1px solid #f0de9a;border-radius:8px;padding:9px 12px;margin-bottom:9px;font-size:12px;}
+.prov-row{display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--border-soft);}
+.prov-row:last-child{border-bottom:none;}
+.prov-best{background:var(--green-bg);border-radius:6px;padding:2px 7px;font-size:10.5px;font-weight:700;color:var(--green);}
+.money{font-family:'DM Mono',monospace;font-size:12px;}
+.money-costo{color:var(--red);}.money-oferta{color:var(--navy);font-weight:600;}.money-ganancia{color:var(--green);font-weight:600;}
+
+/* PARTS BASE */
+.part-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:9px;}
+.part-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.part-pn{font-family:'DM Mono',monospace;font-size:11.5px;font-weight:700;background:var(--navy);color:white;padding:2px 7px;border-radius:5px;}
+.part-desc{flex:1;font-size:13px;font-weight:600;}
+.part-hist{display:flex;flex-direction:column;gap:4px;}
+.hist-row{display:flex;gap:8px;align-items:center;padding:5px 8px;background:var(--surface-2);border-radius:6px;font-size:11.5px;}
+.hist-lic{font-family:'DM Mono',monospace;color:var(--cyan-dim);font-size:11px;}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:11px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface-2);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:var(--cyan-bg);}
+.uz-icon{font-size:28px;margin-bottom:8px;}
+.uz-text{font-size:13.5px;color:var(--text-2);font-weight:500;}
+.uz-sub{font-size:11.5px;color:var(--text-3);margin-top:3px;}
+.doc-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border-soft);}
+.doc-item:last-child{border-bottom:none;}
+.drop-area{border:2px dashed var(--border);border-radius:9px;padding:16px;text-align:center;color:var(--text-3);font-size:12.5px;cursor:pointer;transition:all .18s;margin-top:9px;}
+.drop-area:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* SUMMARY CHIPS */
+.sum-strip{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:13px;}
+.sum-chip{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 14px;flex:1;min-width:130px;}
+.sc-lbl{font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px;}
+.sc-val{font-family:'Crimson Pro',serif;font-size:20px;font-weight:500;}
+.sv-cyan{color:var(--cyan-dim);}.sv-green{color:var(--green);}.sv-red{color:var(--red);}.sv-amber{color:#b07800;}
+
+/* COMPRAR */
+.kw{padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:500;background:var(--bg-deep);color:var(--text-2);border:1px solid var(--border);cursor:pointer;transition:all .15s;}
+.kw:hover,.kw.active{background:var(--cyan-bg2);color:var(--cyan-dim);border-color:var(--cyan);}
+.link-item{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border-soft);cursor:pointer;transition:background .12s;}
+.link-item:last-child{border-bottom:none;}
+.link-item:hover{background:var(--surface-2);}
+
+/* EMPTY */
+.empty{text-align:center;padding:28px;color:var(--text-3);font-size:12.5px;}
+.empty-icon{font-size:22px;margin-bottom:7px;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,20,30,.42);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:14px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;}
+.modal-lg{max-width:820px;}.modal-xl{max-width:96vw;}
+.modal-head{padding:16px 18px 12px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-family:'Crimson Pro',serif;font-size:17px;font-weight:500;color:var(--navy);}
+.modal-body{padding:16px 18px;}
+.modal-foot{padding:11px 18px;border-top:1px solid var(--border-soft);display:flex;justify-content:flex-end;gap:7px;}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:17px;line-height:1;padding:2px 5px;border-radius:4px;}
+.close-btn:hover{color:var(--text);}
+
+/* VOICE */
+.vm-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(10,20,30,.5);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;padding:0 0 36px;}
+.vm-overlay.open{display:flex;}
+.vm-box{background:var(--navy);border-radius:22px 22px 18px 18px;padding:26px 28px 28px;width:100%;max-width:500px;text-align:center;box-shadow:0 -4px 40px rgba(0,0,0,.3);animation:slideUp .28s ease;}
+@keyframes slideUp{from{transform:translateY(36px);opacity:0}to{transform:translateY(0);opacity:1}}
+.vm-title{font-family:'Crimson Pro',serif;font-size:20px;color:white;margin-bottom:5px;}
+.vm-hint{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:18px;line-height:1.6;}
+.vm-orb{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#00d4ff,var(--cyan) 60%,#0090b0);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;}
+.vm-orb.listening{animation:orb-pulse 1.2s ease-in-out infinite;}
+@keyframes orb-pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,180,216,.5);}50%{box-shadow:0 0 0 16px rgba(0,180,216,0);}}
+.vm-transcript{min-height:35px;background:rgba(255,255,255,.06);border-radius:10px;padding:9px 14px;font-size:13px;color:rgba(255,255,255,.75);margin-bottom:12px;font-style:italic;}
+.vm-cmds{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-bottom:14px;}
+.vm-cmd{padding:3px 11px;border-radius:20px;background:rgba(0,180,216,.14);color:var(--cyan);border:1px solid rgba(0,180,216,.28);font-size:11.5px;cursor:pointer;}
+.vm-close{background:rgba(255,255,255,.09);border:none;color:rgba(255,255,255,.55);padding:7px 22px;border-radius:18px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12.5px;}
+.vm-close:hover{background:rgba(255,255,255,.16);color:white;}
+.vtoast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--navy);color:white;padding:10px 18px;border-radius:28px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-md);z-index:300;opacity:0;transition:all .28s ease;display:flex;align-items:center;gap:7px;max-width:92vw;pointer-events:none;}
+.vtoast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
+.vtoast.lt .tdot{animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.hamburger{display:none;background:none;border:none;cursor:pointer;font-size:19px;color:var(--text-2);padding:3px;}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:700px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-md);}
+  .main-wrap{margin-left:0;}
+  .hamburger{display:flex;}
+  .two-col,.three-col{grid-template-columns:1fr;}
+  .content{padding:13px;}
+  .topbar{padding:9px 13px;}
 }
-.date-chip {
-  background: rgba(255,255,255,.06);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 12px;
-  color: rgba(255,255,255,.5);
-}
-.date-chip strong { display: block; color: rgba(255,255,255,.85); font-size: 13px; }
-
-/* ── MAIN ── */
-.main-wrap {
-  margin-left: var(--sidebar-w);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-.topbar {
-  position: sticky;
-  top: 0; z-index: 40;
-  background: rgba(244,246,248,.94);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.topbar-left { display: flex; align-items: center; gap: 10px; }
-.topbar-title { font-family: 'Crimson Pro', serif; font-size: 20px; font-weight: 500; color: var(--navy); }
-.topbar-actions { display: flex; gap: 8px; align-items: center; }
-
-/* topbar mic button */
-.topbar-mic {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--text-3);
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .18s;
-  font-family: 'DM Sans', sans-serif;
-}
-.topbar-mic:hover { border-color: var(--cyan); color: var(--cyan); }
-.topbar-mic.listening { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-bg); }
-
-.content { padding: 26px 28px; flex: 1; }
-
-/* ── SECTIONS ── */
-.section { display: none; }
-.section.active { display: block; }
-
-/* ── VOICE TOAST ── */
-.voice-toast {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--navy);
-  color: white;
-  padding: 12px 22px;
-  border-radius: 30px;
-  font-size: 13.5px;
-  font-weight: 500;
-  box-shadow: var(--shadow-md);
-  z-index: 300;
-  opacity: 0;
-  transition: all .3s ease;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 90vw;
-  text-align: center;
-  pointer-events: none;
-}
-.voice-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); flex-shrink: 0; }
-.voice-toast.listening-toast .toast-dot { animation: blink 1s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-
-/* ── VOICE MODAL ── */
-.voice-modal-overlay {
-  display: none;
-  position: fixed; inset: 0; z-index: 250;
-  background: rgba(10,20,30,.5);
-  backdrop-filter: blur(6px);
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 0 40px;
-}
-.voice-modal-overlay.open { display: flex; }
-.voice-modal {
-  background: var(--navy);
-  border-radius: 24px 24px 20px 20px;
-  padding: 28px 32px 32px;
-  width: 100%;
-  max-width: 520px;
-  text-align: center;
-  box-shadow: 0 -4px 40px rgba(0,0,0,.3);
-  animation: slideUp .3s ease;
-}
-@keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
-.vm-title { font-family: 'Crimson Pro', serif; font-size: 22px; color: white; margin-bottom: 6px; }
-.vm-hint  { font-size: 12.5px; color: rgba(255,255,255,.45); margin-bottom: 24px; line-height: 1.6; }
-.vm-orb {
-  width: 80px; height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, #00d4ff, #00B4D8 60%, #0090b0);
-  margin: 0 auto 20px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 34px;
-  box-shadow: 0 0 0 0 rgba(0,180,216,.5);
-  transition: all .2s;
-  cursor: pointer;
-}
-.vm-orb.listening {
-  animation: orb-pulse 1.2s ease-in-out infinite;
-}
-@keyframes orb-pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(0,180,216,.5); }
-  50%      { box-shadow: 0 0 0 18px rgba(0,180,216,0); }
-}
-.vm-transcript {
-  min-height: 40px;
-  background: rgba(255,255,255,.07);
-  border-radius: 12px;
-  padding: 10px 16px;
-  font-size: 14px;
-  color: rgba(255,255,255,.85);
-  margin-bottom: 16px;
-  font-style: italic;
-}
-.vm-commands {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin-bottom: 18px;
-}
-.vm-cmd {
-  padding: 4px 12px;
-  border-radius: 20px;
-  background: rgba(0,180,216,.15);
-  color: var(--cyan);
-  border: 1px solid rgba(0,180,216,.3);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all .15s;
-}
-.vm-cmd:hover { background: rgba(0,180,216,.28); }
-.vm-close {
-  background: rgba(255,255,255,.1);
-  border: none;
-  color: rgba(255,255,255,.6);
-  padding: 8px 24px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  transition: all .15s;
-}
-.vm-close:hover { background: rgba(255,255,255,.18); color: white; }
-
-/* ── CARDS ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-.card-header {
-  padding: 13px 18px;
-  border-bottom: 1px solid var(--border-soft);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.card-title { font-size: 12.5px; font-weight: 600; color: var(--text-2); letter-spacing: .02em; text-transform: uppercase; }
-.card-body { padding: 16px 18px; }
-
-/* ── STATS ── */
-.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  box-shadow: var(--shadow);
-  position: relative;
-  overflow: hidden;
-}
-.stat-card::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0; height:3px;
-}
-.stat-cyan::before  { background: var(--cyan); }
-.stat-amber::before { background: #e6a800; }
-.stat-green::before { background: var(--green); }
-.stat-red::before   { background: var(--red); }
-.stat-label { font-size: 10.5px; color: var(--text-3); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 8px; }
-.stat-value { font-family: 'Crimson Pro', serif; font-size: 34px; font-weight: 500; line-height: 1; margin-bottom: 3px; }
-.stat-sub { font-size: 11.5px; color: var(--text-3); }
-.stat-cyan .stat-value  { color: var(--cyan-dim); }
-.stat-amber .stat-value { color: #b07800; }
-.stat-green .stat-value { color: var(--green); }
-.stat-red .stat-value   { color: var(--red); }
-
-/* ── GRIDS ── */
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-/* ── BADGES ── */
-.badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
-.badge-cyan   { background: var(--cyan-bg2); color: var(--cyan-dim); }
-.badge-amber  { background: var(--amber-bg); color: var(--amber); }
-.badge-green  { background: var(--green-bg); color: var(--green); }
-.badge-red    { background: var(--red-bg);   color: var(--red); }
-.badge-muted  { background: var(--bg-deep);  color: var(--text-3); }
-
-/* ── BUTTONS ── */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all .15s; white-space: nowrap; }
-.btn-primary { background: var(--cyan); color: white; border-color: var(--cyan-dim); }
-.btn-primary:hover { background: var(--cyan-dim); }
-.btn-navy { background: var(--navy); color: white; border-color: var(--navy-mid); }
-.btn-navy:hover { background: var(--navy-mid); }
-.btn-ghost { background: var(--surface); color: var(--text-2); border-color: var(--border); }
-.btn-ghost:hover { background: var(--bg-deep); }
-.btn-danger { background: var(--red-bg); color: var(--red); border-color: #f0cccc; }
-.btn-danger:hover { background: #fbd5d5; }
-.btn-success { background: var(--green-bg); color: var(--green); border-color: #b8ddc9; }
-.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
-
-/* ── INPUTS ── */
-.form-group { margin-bottom: 14px; }
-.form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 5px; }
-input, select, textarea { width: 100%; padding: 8px 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13.5px; outline: none; transition: border-color .15s, box-shadow .15s; }
-input:focus, select:focus, textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,180,216,.12); }
-textarea { resize: vertical; min-height: 72px; }
-
-/* ── TABLE ── */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-thead tr { border-bottom: 1px solid var(--border); }
-th { text-align: left; padding: 10px 14px; font-size: 10.5px; font-weight: 700; color: var(--text-3); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-td { padding: 11px 14px; border-bottom: 1px solid var(--border-soft); vertical-align: middle; }
-tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--surface-2); }
-
-/* ── DAYS ── */
-.days-pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 600; font-family: 'DM Mono', monospace; }
-.d-urgent { background: var(--red-bg);   color: var(--red); }
-.d-warn   { background: var(--amber-bg); color: var(--amber); }
-.d-ok     { background: var(--green-bg); color: var(--green); }
-.d-past   { background: var(--bg-deep);  color: var(--text-3); }
-
-/* ── TIMELINE ── */
-.tl { display: flex; flex-direction: column; }
-.tl-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); align-items: flex-start; }
-.tl-row:last-child { border-bottom: none; }
-.tl-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
-.dot-cyan  { background: var(--cyan); }
-.dot-amber { background: #e6a800; }
-.dot-green { background: var(--green); }
-.dot-red   { background: var(--red); }
-.tl-time { font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--text-3); min-width: 38px; margin-top: 3px; }
-.tl-body { flex: 1; }
-.tl-title { font-size: 13px; font-weight: 500; }
-.tl-meta  { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
-
-/* ── ALERTS ── */
-.alert-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
-.alert-row:last-child { margin-bottom: 0; }
-.alert-high   { background: var(--red-bg);   border: 1px solid #f0cccc; }
-.alert-medium { background: var(--amber-bg); border: 1px solid #f0de9a; }
-.alert-low    { background: var(--green-bg); border: 1px solid #b8ddc9; }
-.alert-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
-.alert-text { flex: 1; }
-.alert-title { font-weight: 500; }
-.alert-sub { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
-.alert-done { opacity: .4; }
-
-/* ── CALENDAR ── */
-.cal-wrap { font-size: 13px; }
-.cal-nav-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.cal-nav-row span { font-weight: 600; font-size: 13.5px; color: var(--navy); }
-.cal-nav { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; cursor: pointer; color: var(--text-2); font-size: 13px; transition: background .15s; }
-.cal-nav:hover { background: var(--bg-deep); }
-.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
-.cal-dn { text-align: center; font-size: 10px; color: var(--text-3); font-weight: 700; padding: 4px 0; letter-spacing: .05em; }
-.cal-d { text-align: center; padding: 5px 3px; border-radius: 6px; cursor: pointer; font-size: 12.5px; color: var(--text); transition: background .12s; position: relative; }
-.cal-d:hover { background: var(--bg-deep); }
-.cal-d.today { background: var(--cyan); color: white; font-weight: 600; }
-.cal-d.has-ev::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:3px; height:3px; border-radius:50%; background: var(--cyan); }
-.cal-d.today.has-ev::after { background: rgba(255,255,255,.7); }
-.cal-d.dim { color: var(--text-3); }
-
-/* ── CONTACT ── */
-.contact-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border-soft); transition: background .12s; }
-.contact-item:last-child { border-bottom: none; }
-.contact-item:hover { background: var(--surface-2); }
-.c-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-.c-name { font-size: 13.5px; font-weight: 500; }
-.c-sub { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
-.c-contact { font-size: 11.5px; color: var(--text-3); margin-top: 2px; font-family: 'DM Mono', monospace; }
-
-/* ── COMPRAR ── */
-.keyword-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.kw { padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 500; background: var(--bg-deep); color: var(--text-2); border: 1px solid var(--border); cursor: pointer; transition: all .15s; }
-.kw:hover { background: var(--cyan-bg); color: var(--cyan-dim); border-color: var(--cyan-bg2); }
-.kw.active { background: var(--cyan-bg2); color: var(--cyan-dim); border-color: var(--cyan); font-weight: 600; }
-.link-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border-soft); cursor: pointer; transition: background .12s; }
-.link-item:last-child { border-bottom: none; }
-.link-item:hover { background: var(--surface-2); }
-.link-label { flex: 1; font-size: 13.5px; }
-.link-arrow { color: var(--text-3); font-size: 12px; }
-
-/* ── EMPTY ── */
-.empty { text-align: center; padding: 32px; color: var(--text-3); font-size: 13px; }
-.empty-icon { font-size: 24px; margin-bottom: 8px; }
-
-/* ── MODAL ── */
-.overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(10,20,30,.4); backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 16px; }
-.overlay.open { display: flex; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
-.modal-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; }
-.modal-head h3 { font-family: 'Crimson Pro', serif; font-size: 18px; font-weight: 500; color: var(--navy); }
-.modal-body { padding: 18px 20px; }
-.modal-foot { padding: 12px 20px; border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; gap: 8px; }
-.close-btn { background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
-.close-btn:hover { color: var(--text); }
-
-.hamburger { display: none; background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-2); padding: 4px; }
-
-@media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
-@media (max-width: 700px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-md); }
-  .main-wrap { margin-left: 0; }
-  .hamburger { display: flex; }
-  .two-col { grid-template-columns: 1fr; }
-  .content { padding: 16px; }
-  .topbar { padding: 10px 16px; }
-}
-@media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo-icon">✈</div>
+    <h1>Smart Aircraft Services</h1>
+    <p>SAS · Sistema de Gestión Aeronáutica</p>
+    <div class="lf"><label>Usuario</label><input type="text" id="l-user" placeholder="usuario" autocomplete="username"></div>
+    <div class="lf"><label>Contraseña</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="l-err">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <!-- SAS Logo SVG recreado -->
-    <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Avión de papel cyan -->
-      <polygon points="15,20 85,50 15,80 30,50" fill="#00B4D8"/>
-      <!-- Ala oscura -->
-      <polygon points="85,50 15,80 30,50" fill="#2D3E50"/>
-      <!-- Destellos -->
-      <path d="M38 42 L40 38 L42 42 L40 46 Z" fill="#2D3E50" opacity=".9"/>
-      <path d="M44 52 L46 47 L48 52 L46 57 Z" fill="#2D3E50" opacity=".7"/>
-      <circle cx="35" cy="55" r="1.5" fill="#2D3E50" opacity=".5"/>
-    </svg>
-    <div class="logo-text-wrap">
-      <div class="logo-name">Smart Aircraft</div>
-      <div class="logo-sub">SAS · Gestión Aeronáutica</div>
-    </div>
+    <div class="logo-mark">✈</div>
+    <div><div class="logo-name">Smart Aircraft</div><div class="logo-sub">SAS · Gestión Aeronáutica</div></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Principal</div>
+    <button class="nav-item active" onclick="go('dashboard',this)"><span class="nav-icon">◈</span>Dashboard</button>
+    <button class="nav-item" onclick="go('agenda',this)"><span class="nav-icon">◷</span>Agenda</button>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Licitaciones</div>
+    <button class="nav-item" onclick="go('licitaciones',this)"><span class="nav-icon">◻</span>Seguimiento<span class="nav-badge" id="nb-lic">0</span></button>
+    <button class="nav-item" onclick="go('alertas',this)"><span class="nav-icon">◉</span>Alertas<span class="nav-badge" id="nb-al">0</span></button>
+    <button class="nav-item" onclick="go('carpetas',this)"><span class="nav-icon">📁</span>Carpetas</button>
+    <button class="nav-item" onclick="go('repuestos',this)"><span class="nav-icon">🔩</span>Base de Repuestos</button>
+    <button class="nav-item" onclick="go('cartera',this)"><span class="nav-icon">📊</span>Cartera Excel</button>
+    <button class="nav-item" onclick="go('comprar',this)"><span class="nav-icon">⊕</span>Comprar.gob.ar</button>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Gestión</div>
+    <button class="nav-item" onclick="go('contactos',this)"><span class="nav-icon">◎</span>Contactos</button>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-label">Principal</div>
-    <button class="nav-item active" onclick="go('dashboard',this)"><span class="nav-icon">◈</span> Dashboard</button>
-    <button class="nav-item" onclick="go('agenda',this)"><span class="nav-icon">◷</span> Agenda</button>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label">Licitaciones</div>
-    <button class="nav-item" onclick="go('licitaciones',this)"><span class="nav-icon">◻</span> Seguimiento <span class="nav-badge" id="nb-lic">0</span></button>
-    <button class="nav-item" onclick="go('alertas',this)"><span class="nav-icon">◉</span> Alertas <span class="nav-badge" id="nb-al">0</span></button>
-    <button class="nav-item" onclick="go('comprar',this)"><span class="nav-icon">⊕</span> Comprar.gob.ar</button>
-  </div>
-  <div class="sidebar-section">
-    <div class="sidebar-label">Gestión</div>
-    <button class="nav-item" onclick="go('contactos',this)"><span class="nav-icon">◎</span> Contactos</button>
+  <!-- GOOGLE CALENDAR -->
+  <div class="gcal-section">
+    <div class="sb-lbl" style="padding:0 8px;margin-bottom:6px">Google Calendar</div>
+    <button class="gcal-btn" id="gcal-btn" onclick="connectGCal()">
+      <span>📅</span><span id="gcal-btn-text">Conectar Google Calendar</span>
+    </button>
+    <button class="gcal-sync-btn" id="gcal-sync-btn" onclick="syncAllEventsToGCal()">
+      🔄 Sincronizar todos los eventos
+    </button>
+    <div id="gcal-user" style="font-size:10.5px;color:rgba(255,255,255,.35);text-align:center;margin-top:5px;display:none"></div>
   </div>
 
-  <!-- VOICE -->
-  <div class="voice-section">
-    <button class="voice-btn" id="sb-voice-btn" onclick="toggleVoiceModal()">
-      <span class="mic-icon">🎙️</span>
-      <span class="voice-label">Comando de voz</span>
-      <div class="voice-waves">
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div>
-      </div>
+  <div class="sb-voice">
+    <button class="voice-btn" id="sb-vbtn" onclick="toggleVM()">
+      <span style="font-size:15px">🎙️</span>
+      <span class="vl">Comando de voz</span>
+      <div class="wave-bars"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>
     </button>
   </div>
-
-  <div class="sidebar-footer">
-    <div class="date-chip">
-      <strong id="sb-date">—</strong>
-      <span id="sb-time">—</span>
-    </div>
+  <div class="sb-foot">
+    <div class="date-chip"><strong id="sb-date">—</strong><span id="sb-time">—</span></div>
   </div>
 </aside>
 
@@ -616,12 +366,13 @@ tbody tr:hover td { background: var(--surface-2); }
 <div class="main-wrap">
   <div class="topbar">
     <div class="topbar-left">
-      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <button class="hamburger" onclick="toggleSB()">☰</button>
       <div class="topbar-title" id="topbar-title">Dashboard</div>
     </div>
-    <div class="topbar-actions">
-      <button class="topbar-mic" id="topbar-mic" onclick="toggleVoiceModal()">🎙️ Voz</button>
-      <div id="topbar-actions"></div>
+    <div class="topbar-right">
+      <button class="topbar-mic" id="topbar-mic" onclick="toggleVM()">🎙️ Voz</button>
+      <div id="topbar-extra"></div>
+      <button class="logout-btn" onclick="doLogout()">⎋ Salir</button>
     </div>
   </div>
 
@@ -630,39 +381,28 @@ tbody tr:hover td { background: var(--surface-2); }
     <!-- DASHBOARD -->
     <div class="section active" id="sec-dashboard">
       <div class="stats-grid">
-        <div class="stat-card stat-cyan"><div class="stat-label">Licitaciones activas</div><div class="stat-value" id="s-activas">—</div><div class="stat-sub">En seguimiento</div></div>
-        <div class="stat-card stat-amber"><div class="stat-label">Vencen esta semana</div><div class="stat-value" id="s-semana">—</div><div class="stat-sub">Requieren atención</div></div>
-        <div class="stat-card stat-green"><div class="stat-label">Reuniones hoy</div><div class="stat-value" id="s-hoy">—</div><div class="stat-sub">Agendadas</div></div>
-        <div class="stat-card stat-red"><div class="stat-label">Alertas urgentes</div><div class="stat-value" id="s-urgentes">—</div><div class="stat-sub">Sin resolver</div></div>
+        <div class="stat-card sc-cyan"><div class="stat-label">Licitaciones activas</div><div class="stat-value" id="s-act">—</div><div class="stat-sub">En seguimiento</div></div>
+        <div class="stat-card sc-amber"><div class="stat-label">Vencen esta semana</div><div class="stat-value" id="s-sem">—</div><div class="stat-sub">Requieren atención</div></div>
+        <div class="stat-card sc-green"><div class="stat-label">Reuniones hoy</div><div class="stat-value" id="s-hoy">—</div><div class="stat-sub">Agendadas</div></div>
+        <div class="stat-card sc-red"><div class="stat-label">Alertas urgentes</div><div class="stat-value" id="s-urg">—</div><div class="stat-sub">Sin resolver</div></div>
       </div>
-      <div class="two-col" style="margin-bottom:14px">
-        <div class="card">
-          <div class="card-header"><div class="card-title">Próximos vencimientos</div></div>
-          <div id="d-venc"></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Agenda de hoy</div></div>
-          <div style="padding:8px 14px"><div class="tl" id="d-agenda"></div></div>
-        </div>
+      <div class="two-col" style="margin-bottom:13px">
+        <div class="card"><div class="card-header"><div class="card-title">Próximos vencimientos</div></div><div id="d-venc"></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Agenda de hoy</div></div><div style="padding:7px 13px"><div class="tl" id="d-agenda"></div></div></div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Alertas activas</div></div>
-        <div class="card-body"><div id="d-alertas"></div></div>
-      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Alertas activas</div></div><div class="card-body"><div id="d-alertas"></div></div></div>
     </div>
 
     <!-- AGENDA -->
     <div class="section" id="sec-agenda">
       <div class="two-col">
         <div>
-          <div class="card" style="margin-bottom:12px"><div class="card-body"><div class="cal-wrap" id="cal"></div></div></div>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="openM('m-evento')">+ Nueva reunión / tarea</button>
-          <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:6px" onclick="exportICS()">↓ Exportar calendario (.ics)</button>
+          <div class="card" style="margin-bottom:11px"><div class="card-body"><div class="cal-wrap" id="cal"></div></div></div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:5px" onclick="openM('m-evento')">+ Nueva reunión / tarea</button>
+          <button class="btn btn-gcal" style="width:100%;justify-content:center;margin-bottom:5px" onclick="syncAllEventsToGCal()" id="agenda-gcal-btn">📅 Sincronizar con Google Calendar</button>
+          <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="exportICS()">↓ Exportar .ics (iPhone)</button>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title" id="ag-title">Todos los eventos</div></div>
-          <div id="ev-list"></div>
-        </div>
+        <div class="card"><div class="card-header"><div class="card-title" id="ag-title">Todos los eventos</div></div><div id="ev-list"></div></div>
       </div>
     </div>
 
@@ -671,20 +411,17 @@ tbody tr:hover td { background: var(--surface-2); }
       <div class="card">
         <div class="card-header">
           <div class="card-title">Licitaciones en seguimiento</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="fil-estado" onchange="renderLics()" style="width:auto;padding:5px 9px;font-size:12px">
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            <select id="fil-est" onchange="renderLics()" style="width:auto;padding:4px 8px;font-size:11.5px">
               <option value="">Todos los estados</option>
-              <option>En preparación</option><option>Presentada</option>
-              <option>Adjudicada</option><option>No adjudicada</option>
+              <option>En preparación</option><option>Presentada</option><option>Adjudicada</option><option>No adjudicada</option>
             </select>
             <button class="btn btn-primary btn-sm" onclick="openM('m-lic')">+ Nueva</button>
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Expediente</th><th>Descripción</th><th>Organismo</th><th>Estado</th><th>Vencimiento</th><th>Días</th><th></th></tr></thead>
-            <tbody id="tb-lics"></tbody>
-          </table>
+        <div class="tbl-wrap">
+          <table><thead><tr><th>Expediente</th><th>Descripción</th><th>Organismo</th><th>Estado</th><th>Vencimiento</th><th>Días</th><th></th></tr></thead>
+          <tbody id="tb-lics"></tbody></table>
         </div>
       </div>
     </div>
@@ -692,34 +429,79 @@ tbody tr:hover td { background: var(--surface-2); }
     <!-- ALERTAS -->
     <div class="section" id="sec-alertas">
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">Alertas y notificaciones</div>
-          <button class="btn btn-primary btn-sm" onclick="openM('m-alerta')">+ Nueva alerta</button>
-        </div>
+        <div class="card-header"><div class="card-title">Alertas y notificaciones</div><button class="btn btn-primary btn-sm" onclick="openM('m-alerta')">+ Nueva alerta</button></div>
         <div class="card-body"><div id="al-list"></div></div>
+      </div>
+    </div>
+
+    <!-- CARPETAS -->
+    <div class="section" id="sec-carpetas">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--text-3)">Cada carpeta contiene pliego, renglones, proveedores, cotizaciones y se agenda automáticamente en Google Calendar.</div>
+        <button class="btn btn-primary" onclick="openM('m-new-folder')">📁 Nueva carpeta</button>
+      </div>
+      <div class="folder-grid" id="folder-grid"></div>
+    </div>
+
+    <!-- BASE DE REPUESTOS -->
+    <div class="section" id="sec-repuestos">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Base Global de Repuestos</div>
+          <div style="display:flex;gap:7px;align-items:center">
+            <input type="text" id="parts-search" placeholder="Buscar por N° parte o descripción…" oninput="renderParts()" style="width:240px;padding:4px 9px;font-size:12px">
+            <button class="btn btn-primary btn-sm" onclick="openM('m-new-part')">+ Nuevo repuesto</button>
+          </div>
+        </div>
+        <div class="card-body" id="parts-list"></div>
+      </div>
+    </div>
+
+    <!-- CARTERA EXCEL -->
+    <div class="section" id="sec-cartera">
+      <div class="card" style="margin-bottom:13px">
+        <div class="card-header"><div class="card-title">Importar planilla Excel</div></div>
+        <div class="card-body">
+          <div class="upload-zone" id="xl-drop" onclick="document.getElementById('xl-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleXLDrop(event)">
+            <div class="uz-icon">📊</div>
+            <div class="uz-text">Arrastrá tu planilla Excel o hacé clic para seleccionar</div>
+            <div class="uz-sub">Soporta .xlsx — LICITACIONES 2026</div>
+          </div>
+          <input type="file" id="xl-input" accept=".xlsx,.xls" style="display:none" onchange="handleXLFile(this.files[0])">
+          <div id="xl-status" style="margin-top:9px;font-size:12.5px;color:var(--text-3)"></div>
+        </div>
+      </div>
+      <div id="cartera-content" style="display:none">
+        <div class="sum-strip" id="cartera-summary"></div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="cartera-sheet">Cartera de Repuestos</div>
+            <div style="display:flex;gap:7px">
+              <input type="text" id="cartera-q" placeholder="Buscar repuesto…" oninput="filterCartera()" style="width:190px;padding:4px 8px;font-size:12px">
+              <button class="btn btn-ghost btn-sm" onclick="exportCarteraCSV()">↓ CSV</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table><thead><tr><th>#</th><th>Designación</th><th>Vehículo</th><th>P/N</th><th>Cant</th><th>Costo Unit</th><th>Total Costo</th><th>Oferta Unit</th><th>Total Oferta</th><th>Ganancia</th><th>% Lic</th><th>Proveedor</th></tr></thead>
+            <tbody id="cartera-tbody"></tbody></table>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- COMPRAR -->
     <div class="section" id="sec-comprar">
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-header">
-          <div class="card-title">Buscador — Comprar.gob.ar</div>
-          <button class="btn btn-ghost btn-sm" onclick="window.open('https://comprar.gob.ar','_blank')">Ir al sitio →</button>
-        </div>
+      <div class="card" style="margin-bottom:13px">
+        <div class="card-header"><div class="card-title">Buscador — Comprar.gob.ar</div><button class="btn btn-ghost btn-sm" onclick="window.open('https://comprar.gob.ar/BuscarAvanzado.aspx','_blank')">Búsqueda avanzada →</button></div>
         <div class="card-body">
-          <p style="font-size:13px;color:var(--text-3);margin-bottom:12px">Seleccioná una categoría o escribí para generar el enlace directo al sistema COMPRAR.</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <input type="text" id="cmp-q" placeholder="Ej: repuestos aeronáuticos..." style="flex:1;min-width:160px">
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <input type="text" id="cmp-q" placeholder="Ej: repuestos aeronáuticos..." style="flex:1;min-width:150px">
             <button class="btn btn-primary" onclick="buscarCmp()">Buscar</button>
           </div>
-          <div class="keyword-cloud" id="kw-cloud"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:9px" id="kw-cloud"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Accesos directos</div></div>
-        <div id="cmp-results"></div>
-      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Accesos directos</div></div><div id="cmp-results"></div></div>
     </div>
 
     <!-- CONTACTOS -->
@@ -727,8 +509,8 @@ tbody tr:hover td { background: var(--surface-2); }
       <div class="card">
         <div class="card-header">
           <div class="card-title">Proveedores & Contactos</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="con-search" placeholder="Buscar…" oninput="renderCons()" style="width:170px;padding:5px 9px;font-size:12px">
+          <div style="display:flex;gap:7px;align-items:center">
+            <input type="text" id="con-search" placeholder="Buscar…" oninput="renderCons()" style="width:160px;padding:4px 8px;font-size:12px">
             <button class="btn btn-primary btn-sm" onclick="openM('m-contacto')">+ Nuevo</button>
           </div>
         </div>
@@ -739,51 +521,23 @@ tbody tr:hover td { background: var(--surface-2); }
   </div>
 </div>
 
-<!-- VOICE MODAL -->
-<div class="voice-modal-overlay" id="voice-modal">
-  <div class="voice-modal">
-    <div class="vm-title">🎙️ Comando de Voz</div>
-    <div class="vm-hint">
-      Presioná el micrófono y decí un comando.<br>
-      Podés agendar reuniones, buscar licitaciones, agregar alertas y más.
-    </div>
-    <div class="vm-orb" id="vm-orb" onclick="startListening()">🎙️</div>
-    <div class="vm-transcript" id="vm-transcript">Presioná el micrófono para comenzar…</div>
-    <div class="vm-commands">
-      <span class="vm-cmd" onclick="simulateCmd('agenda mañana reunión con ANAC a las 10')">📅 "Agenda reunión con ANAC"</span>
-      <span class="vm-cmd" onclick="simulateCmd('buscar turbinas en comprar')">🔍 "Buscar turbinas en Comprar"</span>
-      <span class="vm-cmd" onclick="simulateCmd('nueva alerta vence expediente en 3 días')">🔔 "Nueva alerta vencimiento"</span>
-      <span class="vm-cmd" onclick="simulateCmd('mostrar licitaciones activas')">📋 "Ver licitaciones activas"</span>
-      <span class="vm-cmd" onclick="simulateCmd('ir a agenda')">◷ "Ir a agenda"</span>
-      <span class="vm-cmd" onclick="simulateCmd('ir a contactos')">◎ "Ir a contactos"</span>
-    </div>
-    <button class="vm-close" onclick="closeVoiceModal()">Cerrar</button>
-  </div>
-</div>
-
-<!-- VOICE TOAST -->
-<div class="voice-toast" id="voice-toast">
-  <div class="toast-dot"></div>
-  <span id="toast-msg">Escuchando…</span>
-</div>
-
-<!-- MODALES CRUD -->
+<!-- MODALES -->
 <div class="overlay" id="m-evento">
   <div class="modal">
     <div class="modal-head"><h3>Nueva reunión / tarea</h3><button class="close-btn" onclick="closeM('m-evento')">✕</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Tipo</label><select id="e-tipo"><option>Reunión</option><option>Tarea</option><option>Llamada</option><option>Plazo</option></select></div>
       <div class="form-group"><label class="form-label">Título *</label><input type="text" id="e-titulo" placeholder="Ej: Reunión técnica ANAC"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <div class="form-group"><label class="form-label">Fecha</label><input type="date" id="e-fecha"></div>
         <div class="form-group"><label class="form-label">Hora</label><input type="time" id="e-hora"></div>
       </div>
-      <div class="form-group"><label class="form-label">Notas</label><textarea id="e-notas" placeholder="Detalles..."></textarea></div>
+      <div class="form-group"><label class="form-label">Notas</label><textarea id="e-notas"></textarea></div>
+      <div style="background:var(--cyan-bg);border:1px solid var(--cyan-bg2);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--cyan-dim)">
+        📅 Si Google Calendar está conectado, el evento se agregará automáticamente.
+      </div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeM('m-evento')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveEvento()">Guardar</button>
-    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-evento')">Cancelar</button><button class="btn btn-primary" onclick="saveEvento()">Guardar</button></div>
   </div>
 </div>
 
@@ -791,21 +545,18 @@ tbody tr:hover td { background: var(--surface-2); }
   <div class="modal">
     <div class="modal-head"><h3>Nueva licitación</h3><button class="close-btn" onclick="closeM('m-lic')">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">N° Expediente *</label><input type="text" id="l-id" placeholder="EX-2024-12345"></div>
-      <div class="form-group"><label class="form-label">Descripción</label><input type="text" id="l-desc" placeholder="Ej: Repuestos motor CFM56"></div>
-      <div class="form-group"><label class="form-label">Organismo</label><input type="text" id="l-org" placeholder="Ej: Fuerza Aérea Argentina"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">N° Expediente *</label><input type="text" id="l-id"></div>
+      <div class="form-group"><label class="form-label">Descripción</label><input type="text" id="l-desc"></div>
+      <div class="form-group"><label class="form-label">Organismo</label><input type="text" id="l-org"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <div class="form-group"><label class="form-label">Estado</label><select id="l-est"><option>En preparación</option><option>Presentada</option><option>Adjudicada</option><option>No adjudicada</option></select></div>
         <div class="form-group"><label class="form-label">Vencimiento</label><input type="date" id="l-vence"></div>
       </div>
-      <div class="form-group"><label class="form-label">Monto (ARS)</label><input type="number" id="l-monto" placeholder="0"></div>
-      <div class="form-group"><label class="form-label">URL en Comprar</label><input type="text" id="l-url" placeholder="https://comprar.gob.ar/..."></div>
+      <div class="form-group"><label class="form-label">Monto (ARS)</label><input type="number" id="l-monto"></div>
+      <div class="form-group"><label class="form-label">URL Comprar</label><input type="text" id="l-url"></div>
       <div class="form-group"><label class="form-label">Notas</label><textarea id="l-notas"></textarea></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeM('m-lic')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveLic()">Guardar</button>
-    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-lic')">Cancelar</button><button class="btn btn-primary" onclick="saveLic()">Guardar</button></div>
   </div>
 </div>
 
@@ -814,17 +565,14 @@ tbody tr:hover td { background: var(--surface-2); }
     <div class="modal-head"><h3>Nueva alerta</h3><button class="close-btn" onclick="closeM('m-alerta')">✕</button></div>
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Tipo</label><select id="a-tipo"><option>Vencimiento de plazo</option><option>Seguimiento de licitación</option><option>Reunión</option><option>Pago / Facturación</option><option>Otro</option></select></div>
-      <div class="form-group"><label class="form-label">Título *</label><input type="text" id="a-titulo" placeholder="Ej: Vence plazo EX-2024-001"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">Título *</label><input type="text" id="a-titulo"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <div class="form-group"><label class="form-label">Fecha límite</label><input type="date" id="a-fecha"></div>
         <div class="form-group"><label class="form-label">Prioridad</label><select id="a-prio"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option></select></div>
       </div>
       <div class="form-group"><label class="form-label">Descripción</label><textarea id="a-desc"></textarea></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeM('m-alerta')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveAlerta()">Guardar</button>
-    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-alerta')">Cancelar</button><button class="btn btn-primary" onclick="saveAlerta()">Guardar</button></div>
   </div>
 </div>
 
@@ -832,512 +580,707 @@ tbody tr:hover td { background: var(--surface-2); }
   <div class="modal">
     <div class="modal-head"><h3>Nuevo contacto</h3><button class="close-btn" onclick="closeM('m-contacto')">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">Nombre completo *</label><input type="text" id="c-nombre" placeholder="Ing. Carlos Rodríguez"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">Nombre *</label><input type="text" id="c-nombre"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <div class="form-group"><label class="form-label">Empresa</label><input type="text" id="c-empresa"></div>
         <div class="form-group"><label class="form-label">Cargo</label><input type="text" id="c-rol"></div>
       </div>
       <div class="form-group"><label class="form-label">Tipo</label><select id="c-tipo"><option>Organismo público</option><option>Proveedor</option><option>Cliente</option><option>Asesor</option><option>Otro</option></select></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
         <div class="form-group"><label class="form-label">Email</label><input type="email" id="c-email"></div>
         <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="c-tel"></div>
       </div>
       <div class="form-group"><label class="form-label">Notas</label><textarea id="c-notas"></textarea></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeM('m-contacto')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveCon()">Guardar</button>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-contacto')">Cancelar</button><button class="btn btn-primary" onclick="saveCon()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="m-new-folder">
+  <div class="modal">
+    <div class="modal-head"><h3>Nueva Carpeta de Licitación</h3><button class="close-btn" onclick="closeM('m-new-folder')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:var(--cyan-bg);border:1px solid var(--cyan-bg2);border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:var(--cyan-dim)">💡 Ingresá el número de proceso tal como aparece en Comprar.gob.ar</div>
+      <div class="form-group"><label class="form-label">N° Proceso / Licitación *</label><input type="text" id="f-id" placeholder="84/147-0281-LPR26"></div>
+      <div class="form-group"><label class="form-label">Descripción / Objeto</label><input type="text" id="f-desc"></div>
+      <div class="form-group"><label class="form-label">Organismo / UOC</label><input type="text" id="f-org"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <div class="form-group"><label class="form-label">Fecha apertura</label><input type="date" id="f-apertura"></div>
+        <div class="form-group"><label class="form-label">Fin de consultas</label><input type="date" id="f-consultas"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <div class="form-group"><label class="form-label">Duración contrato</label><input type="text" id="f-duracion" placeholder="Ej: 3 meses"></div>
+        <div class="form-group"><label class="form-label">Monto estimado (ARS)</label><input type="number" id="f-monto"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Procedimiento</label><select id="f-proc"><option>Licitación Pública</option><option>Licitación Privada</option><option>Contratación Directa</option><option>Concurso de Precios</option></select></div>
+      <div class="form-group"><label class="form-label">Lugar de entrega</label><input type="text" id="f-lugar"></div>
+      <div style="background:var(--amber-bg);border:1px solid #f0de9a;border-radius:9px;padding:11px 13px;font-size:12px;color:var(--amber)">
+        🔔 Al crear la carpeta se agendarán automáticamente en SAS y en Google Calendar: apertura, fin de consultas y alerta 48hs antes.
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-new-folder')">Cancelar</button><button class="btn btn-primary" onclick="saveFolder()">Crear carpeta</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="m-folder">
+  <div class="modal modal-xl">
+    <div class="modal-head">
+      <div><h3 id="fm-title">Carpeta</h3><div style="font-size:11.5px;color:var(--text-3);margin-top:2px" id="fm-meta"></div></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="fm-estado" onchange="updateFolderEstado()" style="padding:4px 8px;font-size:12px;width:auto">
+          <option>En preparación</option><option>Oferta presentada</option><option>Adjudicada</option><option>No adjudicada</option><option>Facturada</option>
+        </select>
+        <button class="close-btn" onclick="closeM('m-folder')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div class="ftabs" style="padding:0 16px;margin-bottom:0">
+        <div class="ftab active" onclick="switchFTab('info',this)">📋 Información</div>
+        <div class="ftab" onclick="switchFTab('rengls',this)">🔩 Renglones</div>
+        <div class="ftab" onclick="switchFTab('docs',this)">📄 Documentos</div>
+        <div class="ftab" onclick="switchFTab('costos',this)">💰 Costos</div>
+        <div class="ftab" onclick="switchFTab('notas',this)">📝 Notas</div>
+      </div>
+      <div class="ftab-content active" id="ftc-info" style="padding:16px"><div id="fm-info-body"></div></div>
+      <div class="ftab-content" id="ftc-rengls" style="padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:12.5px;color:var(--text-3)">El sistema busca automáticamente en la base de repuestos al agregar un renglón.</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddRenglon()">+ Renglón</button>
+        </div>
+        <div id="rengls-list"></div>
+      </div>
+      <div class="ftab-content" id="ftc-docs" style="padding:16px">
+        <div class="ftabs" style="padding:0;margin-bottom:12px">
+          <div class="ftab active" onclick="switchDocTab('pliego',this)">Pliego / ET</div>
+          <div class="ftab" onclick="switchDocTab('oferta',this)">Oferta</div>
+          <div class="ftab" onclick="switchDocTab('adjud',this)">Adjudicación</div>
+          <div class="ftab" onclick="switchDocTab('fact',this)">Facturación</div>
+        </div>
+        <div id="docs-pliego"><div id="doc-list-pliego"></div><div class="drop-area" onclick="triggerDoc('pliego')">+ Subir pliego / especificación técnica</div><input type="file" id="di-pliego" style="display:none" multiple onchange="handleDoc('pliego',this.files)"></div>
+        <div id="docs-oferta" style="display:none"><div id="doc-list-oferta"></div><div class="drop-area" onclick="triggerDoc('oferta')">+ Subir documentación de oferta</div><input type="file" id="di-oferta" style="display:none" multiple onchange="handleDoc('oferta',this.files)"></div>
+        <div id="docs-adjud" style="display:none"><div id="doc-list-adjud"></div><div class="drop-area" onclick="triggerDoc('adjud')">+ Subir resolución / acta</div><input type="file" id="di-adjud" style="display:none" multiple onchange="handleDoc('adjud',this.files)"></div>
+        <div id="docs-fact" style="display:none"><div id="doc-list-fact"></div><div class="drop-area" onclick="triggerDoc('fact')">+ Subir factura / remito</div><input type="file" id="di-fact" style="display:none" multiple onchange="handleDoc('fact',this.files)"></div>
+      </div>
+      <div class="ftab-content" id="ftc-costos" style="padding:16px"><div id="costos-summary"></div><div id="costos-detail"></div></div>
+      <div class="ftab-content" id="ftc-notas" style="padding:16px">
+        <div class="form-group"><label class="form-label">Notas internas</label><textarea id="fm-notas" rows="6" placeholder="Observaciones, seguimiento, contactos clave..."></textarea></div>
+        <button class="btn btn-primary" onclick="saveFolderNotas()">Guardar notas</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL QUICK-AGENDA (voz) -->
+<div class="overlay" id="m-add-renglon">
+  <div class="modal">
+    <div class="modal-head"><h3>Agregar Renglón</h3><button class="close-btn" onclick="closeM('m-add-renglon')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:9px">
+        <div class="form-group"><label class="form-label">N° Renglón</label><input type="number" id="r-num" placeholder="1"></div>
+        <div class="form-group"><label class="form-label">Descripción *</label><input type="text" id="r-desc" placeholder="Ej: Mantenimiento motor" oninput="searchPartsHint()"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
+        <div class="form-group"><label class="form-label">N° de Parte</label><input type="text" id="r-pn" placeholder="CFM56-7B" oninput="searchPartsHint()"></div>
+        <div class="form-group"><label class="form-label">Cantidad</label><input type="number" id="r-cant" placeholder="1"></div>
+        <div class="form-group"><label class="form-label">Unidad</label><input type="text" id="r-unit" placeholder="UN / KG / HS"></div>
+      </div>
+      <div id="parts-hint" style="display:none;background:var(--amber-bg);border:1px solid #f0de9a;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px">
+        <div style="font-weight:700;color:var(--amber);margin-bottom:6px">💡 Encontré este repuesto en el historial:</div>
+        <div id="parts-hint-content"></div>
+      </div>
+      <div style="background:var(--surface-2);border-radius:9px;padding:12px;margin-top:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:9px">Proveedores y precios</div>
+        <div id="prov-inputs"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addProvInput()" style="margin-top:6px">+ Agregar proveedor</button>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-add-renglon')">Cancelar</button><button class="btn btn-primary" onclick="saveRenglon()">Guardar renglón</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="m-new-part">
+  <div class="modal">
+    <div class="modal-head"><h3>Nuevo Repuesto</h3><button class="close-btn" onclick="closeM('m-new-part')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <div class="form-group"><label class="form-label">N° de Parte *</label><input type="text" id="p-pn"></div>
+        <div class="form-group"><label class="form-label">Descripción *</label><input type="text" id="p-desc"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Categoría</label><input type="text" id="p-cat" placeholder="Filtros, Neumáticos, Electrónica..."></div>
+      <div style="background:var(--surface-2);border-radius:9px;padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:9px">Proveedor principal</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <div class="form-group"><label class="form-label">Proveedor</label><input type="text" id="p-prov"></div>
+          <div class="form-group"><label class="form-label">Precio costo (ARS)</label><input type="number" id="p-costo"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Link del proveedor</label><input type="text" id="p-link" placeholder="https://..."></div>
+      </div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Notas</label><textarea id="p-notas"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-new-part')">Cancelar</button><button class="btn btn-primary" onclick="savePart()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="vm-overlay" id="vm-overlay">
+  <div class="vm-box">
+    <div class="vm-title">🎙️ Comando de Voz — SAS</div>
+    <div class="vm-hint">Presioná el micrófono y dictá un comando en español.</div>
+    <div class="vm-orb" id="vm-orb" onclick="startListening()">🎙️</div>
+    <div class="vm-transcript" id="vm-transcript">Presioná el micrófono para comenzar…</div>
+    <div class="vm-cmds">
+      <span class="vm-cmd" onclick="simCmd('agenda reunión con ANAC mañana a las 10')">📅 Agendar reunión</span>
+      <span class="vm-cmd" onclick="simCmd('ir a carpetas')">📁 Ir a Carpetas</span>
+      <span class="vm-cmd" onclick="simCmd('ir a repuestos')">🔩 Base Repuestos</span>
+      <span class="vm-cmd" onclick="simCmd('buscar turbinas en comprar')">🔍 Buscar en Comprar</span>
+      <span class="vm-cmd" onclick="simCmd('sincronizar google calendar')">📅 Sincronizar GCal</span>
+      <span class="vm-cmd" onclick="simCmd('nueva alerta vencimiento')">🔔 Nueva alerta</span>
+    </div>
+    <button class="vm-close" onclick="closeVM()">Cerrar</button>
+  </div>
+</div>
+<div class="vtoast" id="vtoast"><div class="tdot"></div><span id="tmsg">…</span></div>
+
 <div class="overlay" id="m-quick">
   <div class="modal">
-    <div class="modal-head"><h3 id="quick-title">Confirmar acción de voz</h3><button class="close-btn" onclick="closeM('m-quick')">✕</button></div>
-    <div class="modal-body" id="quick-body"></div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeM('m-quick')">Cancelar</button>
-      <button class="btn btn-primary" id="quick-confirm">Confirmar</button>
-    </div>
+    <div class="modal-head"><h3 id="q-title">Confirmar</h3><button class="close-btn" onclick="closeM('m-quick')">✕</button></div>
+    <div class="modal-body" id="q-body"></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-quick')">Cancelar</button><button class="btn btn-primary" id="q-confirm">Confirmar</button></div>
   </div>
 </div>
 
 <script>
-/* ══════════════════════════════════════════
-   STATE
-══════════════════════════════════════════ */
-const SK='sas_v1';
-let S={eventos:[],lics:[],alertas:[],cons:[]};
+/* ═══ GOOGLE CALENDAR ═══ */
+const GCAL_CLIENT_ID='757153937502-l8jenhf0anljuaq9dtfa15j1p11h5f7g.apps.googleusercontent.com';
+const GCAL_SCOPE='https://www.googleapis.com/auth/calendar.events';
+let gcalReady=false,gcalToken=null,gcalUser='';
+
+function loadGSI(){
+  return new Promise(resolve=>{
+    if(window.google&&window.google.accounts){resolve();return;}
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client';
+    s.onload=resolve;s.onerror=resolve;
+    document.head.appendChild(s);
+  });
+}
+
+async function connectGCal(){
+  try{
+    await loadGSI();
+    if(!window.google||!window.google.accounts){showToast('⚠️ Error cargando Google. Verificá tu conexión.');return;}
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:GCAL_CLIENT_ID,
+      scope:GCAL_SCOPE+' https://www.googleapis.com/auth/userinfo.email',
+      callback:async(resp)=>{
+        if(resp.access_token){
+          gcalToken=resp.access_token;gcalReady=true;
+          sessionStorage.setItem('gcal_token',gcalToken);
+          // Get user info
+          try{
+            const ui=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+gcalToken}});
+            const ud=await ui.json();
+            gcalUser=ud.email||'';
+            document.getElementById('gcal-user').textContent=gcalUser;
+            document.getElementById('gcal-user').style.display='block';
+          }catch(e){}
+          updateGCalUI(true);
+          showToast('✅ Google Calendar conectado — '+gcalUser);
+        }
+      }
+    });
+    client.requestAccessToken();
+  }catch(e){showToast('⚠️ Error al conectar Google Calendar: '+e.message);}
+}
+
+function updateGCalUI(connected){
+  const btn=document.getElementById('gcal-btn');
+  const syncBtn=document.getElementById('gcal-sync-btn');
+  const txt=document.getElementById('gcal-btn-text');
+  if(connected){
+    btn.classList.add('connected');
+    txt.textContent='✓ Google Calendar conectado';
+    syncBtn.style.display='block';
+  }else{
+    btn.classList.remove('connected');
+    txt.textContent='Conectar Google Calendar';
+    syncBtn.style.display='none';
+  }
+}
+
+async function addToGCal(titulo,fecha,hora,notas,durHoras=1){
+  if(!gcalReady||!gcalToken){return false;}
+  if(!fecha)return false;
+  const h=hora||'09:00';
+  const [hh,mm]=h.split(':').map(Number);
+  const endH=String(Math.min(hh+durHoras,23)).padStart(2,'0');
+  const startDT=`${fecha}T${h}:00`;
+  const endDT=`${fecha}T${endH}:${String(mm).padStart(2,'0')}:00`;
+  const event={
+    summary:titulo,
+    description:notas||'',
+    start:{dateTime:startDT,timeZone:'America/Argentina/Buenos_Aires'},
+    end:{dateTime:endDT,timeZone:'America/Argentina/Buenos_Aires'},
+    reminders:{useDefault:false,overrides:[{method:'popup',minutes:60},{method:'email',minutes:1440}]}
+  };
+  try{
+    const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+gcalToken,'Content-Type':'application/json'},
+      body:JSON.stringify(event)
+    });
+    if(r.status===401){gcalReady=false;gcalToken=null;updateGCalUI(false);showToast('⚠️ Sesión de Google expirada. Reconectá.');return false;}
+    return r.ok;
+  }catch(e){return false;}
+}
+
+async function syncAllEventsToGCal(){
+  if(!gcalReady){
+    await connectGCal();
+    setTimeout(()=>{if(gcalReady)syncAllEventsToGCal();},2000);
+    return;
+  }
+  showToast('🔄 Sincronizando eventos…',99999,true);
+  let ok=0;
+  for(const e of S.eventos){
+    const res=await addToGCal(e.titulo,e.fecha,e.hora,e.notas);
+    if(res)ok++;
+  }
+  hideToast();
+  showToast(`✅ ${ok} eventos sincronizados con Google Calendar`);
+}
+
+// Restore session token
+const savedToken=sessionStorage.getItem('gcal_token');
+if(savedToken){gcalToken=savedToken;gcalReady=true;updateGCalUI(true);}
+
+/* ═══ AUTH ═══ */
+const USERS={'admin':'sas2026','pablo':'smart2026'};
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim(),p=document.getElementById('l-pass').value;
+  if(USERS[u]===p){sessionStorage.setItem('sas_auth',u);document.getElementById('login-screen').style.display='none';renderDash();}
+  else{const e=document.getElementById('l-err');e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
+}
+function doLogout(){if(!confirm('¿Cerrar sesión?'))return;sessionStorage.removeItem('sas_auth');sessionStorage.removeItem('gcal_token');location.reload();}
+if(!sessionStorage.getItem('sas_auth')){document.getElementById('login-screen').style.display='flex';}
+else{document.getElementById('login-screen').style.display='none';}
+
+/* ═══ STATE ═══ */
+const SK='sas_v3';
+let S={eventos:[],lics:[],alertas:[],cons:[],folders:[],parts:[]};
 try{const r=localStorage.getItem(SK);if(r)S=JSON.parse(r);}catch(e){}
 function save(){try{localStorage.setItem(SK,JSON.stringify(S));}catch(e){}}
 
 if(!S.lics.length){
   const ad=d=>new Date(Date.now()+d*864e5).toISOString().slice(0,10);
-  S.lics=[
-    {id:'EX-2024-00123',desc:'Repuestos turbina CFM56',org:'Fuerza Aérea Argentina',est:'En preparación',vence:ad(4),monto:2850000,url:'',notas:'Solicitar cotización a 3 proveedores.'},
-    {id:'EX-2024-00456',desc:'Kit mantenimiento tren de aterrizaje',org:'Aerolíneas Argentinas',est:'Presentada',vence:ad(12),monto:1540000,url:'',notas:'Oferta presentada el 10/04.'},
-    {id:'EX-2024-00789',desc:'Filtros hidráulicos Boeing 737',org:'ANAC',est:'Adjudicada',vence:ad(30),monto:980000,url:'',notas:'Pendiente orden de compra.'},
-  ];
-  S.eventos=[
-    {tipo:'Reunión',titulo:'Reunión técnica ANAC',fecha:ad(0),hora:'10:00',notas:'Llevar catálogos'},
-    {tipo:'Plazo',titulo:'Entrega oferta EX-2024-00123',fecha:ad(4),hora:'17:00',notas:''},
-  ];
-  S.alertas=[
-    {tipo:'Vencimiento de plazo',titulo:'Vence EX-2024-00123 en 4 días',fecha:ad(4),prio:'alta',desc:'Preparar documentación técnica.',done:false},
-    {tipo:'Seguimiento de licitación',titulo:'Seguimiento EX-2024-00789',fecha:ad(7),prio:'media',desc:'Consultar orden de compra.',done:false},
-  ];
-  S.cons=[
-    {nombre:'Cte. Luis Fernández',empresa:'Fuerza Aérea Argentina',rol:'Jefe de Abastecimiento',tipo:'Organismo público',email:'lfernandez@fab.mil.ar',tel:'011-4311-0001',notas:''},
-    {nombre:'Ing. Marcela Torres',empresa:'ANAC',rol:'Directora de Aeronavegabilidad',tipo:'Organismo público',email:'mtorres@anac.gov.ar',tel:'011-5554-0200',notas:''},
-    {nombre:'Sr. Pablo Giménez',empresa:'AeroPartes S.A.',rol:'Gerente Comercial',tipo:'Proveedor',email:'pgimenez@aeropartes.com.ar',tel:'0351-412-5566',notas:''},
-  ];
+  S.lics=[{id:'EX-2024-00123',desc:'Repuestos turbina CFM56',org:'Fuerza Aérea Argentina',est:'En preparación',vence:ad(4),monto:2850000,url:'',notas:''},{id:'37133-0054-CDI26',desc:'Neumáticos varios vehículos',org:'GNA',est:'Presentada',vence:ad(12),monto:11402072,url:'',notas:''}];
+  S.eventos=[{tipo:'Reunión',titulo:'Reunión técnica ANAC',fecha:ad(0),hora:'10:00',notas:''},{tipo:'Plazo',titulo:'Entrega oferta EX-2024-00123',fecha:ad(4),hora:'17:00',notas:''}];
+  S.alertas=[{tipo:'Vencimiento de plazo',titulo:'Vence EX-2024-00123 en 4 días',fecha:ad(4),prio:'alta',desc:'',done:false}];
+  S.cons=[{nombre:'Cte. Luis Fernández',empresa:'Fuerza Aérea Argentina',rol:'Jefe de Abastecimiento',tipo:'Organismo público',email:'lfernandez@fab.mil.ar',tel:'011-4311-0001',notas:''},{nombre:'Ing. Marcela Torres',empresa:'ANAC',rol:'Directora Aeronavegabilidad',tipo:'Organismo público',email:'mtorres@anac.gov.ar',tel:'011-5554-0200',notas:''},{nombre:'Sr. Pablo Giménez',empresa:'AeroPartes S.A.',rol:'Gerente Comercial',tipo:'Proveedor',email:'pgimenez@aeropartes.com.ar',tel:'0351-412-5566',notas:''}];
+  S.folders=[{id:'37133-0054-CDI26',desc:'Neumáticos varios vehículos',org:'GNA',apertura:'2026-01-28',consultas:'2026-01-20',duracion:'12 meses',monto:11402072,proc:'Licitación Privada',lugar:'Buenos Aires',estado:'Oferta presentada',docs:{pliego:[],oferta:[],adjud:[],fact:[]},rengls:[{num:1,desc:'Neumático Trasero 4x4 Bridgestone',pn:'BT-4X4-R265',cant:20,unit:'UN',provs:[{nombre:'AeroPartes S.A.',costo:45000,oferta:68000,link:'https://aeropartes.com.ar'},{nombre:'Ruedas del Sur',costo:42000,oferta:68000,link:'https://ruedasdelsur.com.ar'}]},{num:2,desc:'Neumático Delantero 4x4 Bridgestone',pn:'BT-4X4-F245',cant:20,unit:'UN',provs:[{nombre:'AeroPartes S.A.',costo:40000,oferta:62000,link:'https://aeropartes.com.ar'}]}],notas:''}];
+  S.parts=[{pn:'BT-4X4-R265',desc:'Neumático Trasero 4x4 Bridgestone',cat:'Neumáticos',prov:'AeroPartes S.A.',costo:45000,link:'https://aeropartes.com.ar',notas:'',hist:[{lic:'37133-0054-CDI26',costo:45000,oferta:68000,fecha:'2026-01'}]},{pn:'CFM56-7B-FLT',desc:'Filtro aceite turbina CFM56-7B',cat:'Filtros',prov:'TurboParts International',costo:320000,link:'https://turboparts.com',notas:'Lead time 45 días',hist:[{lic:'EX-2024-00123',costo:320000,oferta:480000,fecha:'2024-06'}]}];
   save();
 }
 
-/* ══════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════ */
-const today=()=>new Date().toISOString().slice(0,10);
-function daysLeft(d){if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+'T00:00:00')-t)/864e5);}
-function fmtDate(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
-function daysPill(d){
+/* ═══ HELPERS ═══ */
+const tod=()=>new Date().toISOString().slice(0,10);
+function dl(d){if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d+'T00:00:00')-t)/864e5);}
+function fd(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+function fARS(n){if(!n&&n!==0)return'—';return'$'+Number(n).toLocaleString('es-AR');}
+function dpill(d){
   if(d===null)return'—';
-  if(d<0)return`<span class="days-pill d-past">Vencida</span>`;
-  if(d===0)return`<span class="days-pill d-urgent">Hoy</span>`;
-  if(d<=3)return`<span class="days-pill d-urgent">${d}d</span>`;
-  if(d<=7)return`<span class="days-pill d-warn">${d}d</span>`;
-  return`<span class="days-pill d-ok">${d}d</span>`;
+  if(d<0)return`<span class="dp dp-p">Vencida</span>`;
+  if(d===0)return`<span class="dp dp-u">Hoy</span>`;
+  if(d<=3)return`<span class="dp dp-u">${d}d</span>`;
+  if(d<=7)return`<span class="dp dp-w">${d}d</span>`;
+  return`<span class="dp dp-o">${d}d</span>`;
 }
-const EST_B={'En preparación':'badge-cyan','Presentada':'badge-amber','Adjudicada':'badge-green','No adjudicada':'badge-muted'};
-const PRIO_CLS={alta:'alert-high',media:'alert-medium',baja:'alert-low'};
-const PRIO_ICON={alta:'🔴',media:'🟡',baja:'🟢'};
-const TL_DOT={Reunión:'dot-cyan',Tarea:'dot-amber',Llamada:'dot-green',Plazo:'dot-red'};
-const AV_C=['#00B4D8','#2D3E50','#1a7a4a','#b07800','#7c3aed'];
-function avBg(n){return AV_C[n.charCodeAt(0)%AV_C.length]+'22';}
-function avFg(n){return AV_C[n.charCodeAt(0)%AV_C.length];}
-function initials(n){return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+const EB={'En preparación':'b-cyan','Presentada':'b-amber','Adjudicada':'b-green','No adjudicada':'b-muted','Oferta presentada':'b-amber','Facturada':'b-purple'};
+const PC={alta:'al-high',media:'al-med',baja:'al-low'};
+const PI={alta:'🔴',media:'🟡',baja:'🟢'};
+const TD={Reunión:'dc',Tarea:'da',Llamada:'dg',Plazo:'dr'};
+const AVC=['#00B4D8','#2D3E50','#1a7a4a','#b07800','#7c3aed'];
+function avBg(n){return AVC[n.charCodeAt(0)%AVC.length]+'22';}
+function avFg(n){return AVC[n.charCodeAt(0)%AVC.length];}
+function ini(n){return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
 
-/* ══════════════════════════════════════════
-   NAV
-══════════════════════════════════════════ */
-const TITLES={dashboard:'Dashboard',agenda:'Agenda',licitaciones:'Licitaciones',alertas:'Alertas',comprar:'Comprar.gob.ar',contactos:'Contactos'};
-const ACTIONS={
-  agenda:`<button class="btn btn-primary btn-sm" onclick="openM('m-evento')">+ Nueva</button><button class="btn btn-ghost btn-sm" onclick="exportICS()">↓ .ics</button>`,
-  licitaciones:`<button class="btn btn-primary btn-sm" onclick="openM('m-lic')">+ Nueva</button>`,
-  alertas:`<button class="btn btn-primary btn-sm" onclick="openM('m-alerta')">+ Nueva alerta</button>`,
-  contactos:`<button class="btn btn-primary btn-sm" onclick="openM('m-contacto')">+ Nuevo</button>`,
-};
-
+/* ═══ NAV ═══ */
+const TITLES={dashboard:'Dashboard',agenda:'Agenda',licitaciones:'Licitaciones',alertas:'Alertas',carpetas:'Carpetas',repuestos:'Base de Repuestos',cartera:'Cartera Excel',comprar:'Comprar.gob.ar',contactos:'Contactos'};
 function go(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
   if(btn)btn.classList.add('active');
   document.getElementById('topbar-title').textContent=TITLES[id]||id;
-  document.getElementById('topbar-actions').innerHTML=ACTIONS[id]||'';
-  closeSidebar();
-  ({dashboard:renderDash,agenda:renderCal,licitaciones:renderLics,alertas:renderAl,comprar:renderCmp,contactos:renderCons}[id]||function(){})();
+  closeSB();
+  ({dashboard:renderDash,agenda:renderCal,licitaciones:renderLics,alertas:renderAl,carpetas:renderFolders,repuestos:renderParts,comprar:renderCmp,contactos:renderCons}[id]||function(){})();
 }
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');}
-document.addEventListener('click',e=>{
-  const sb=document.getElementById('sidebar');
-  if(sb.classList.contains('open')&&!sb.contains(e.target)&&!e.target.classList.contains('hamburger'))closeSidebar();
-});
-
+function toggleSB(){document.getElementById('sidebar').classList.toggle('open');}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');}
+document.addEventListener('click',e=>{const sb=document.getElementById('sidebar');if(sb.classList.contains('open')&&!sb.contains(e.target)&&!e.target.classList.contains('hamburger'))closeSB();});
 function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
-/* ══════════════════════════════════════════
-   VOICE COMMAND ENGINE
-══════════════════════════════════════════ */
-let recognition=null, isListening=false;
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-
-function speak(text){
-  if(!window.speechSynthesis)return;
-  window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='es-AR'; u.rate=1.05; u.pitch=1;
-  window.speechSynthesis.speak(u);
-}
-
-function showToast(msg,duration=3000,listening=false){
-  const t=document.getElementById('voice-toast');
-  const d=t.querySelector('.toast-dot');
-  document.getElementById('toast-msg').textContent=msg;
-  t.classList.toggle('listening-toast',listening);
-  if(listening) d.style.background='var(--cyan)';
-  else d.style.background='var(--cyan)';
-  t.classList.add('show');
-  if(!listening) setTimeout(()=>t.classList.remove('show'),duration);
-}
-function hideToast(){document.getElementById('voice-toast').classList.remove('show');}
-
-function setListeningUI(on){
-  isListening=on;
-  const orb=document.getElementById('vm-orb');
-  const sb=document.getElementById('sb-voice-btn');
-  const tm=document.getElementById('topbar-mic');
-  if(on){
-    orb.classList.add('listening'); sb.classList.add('listening'); tm.classList.add('listening');
-    orb.textContent=''; orb.innerHTML='🔴';
-  } else {
-    orb.classList.remove('listening'); sb.classList.remove('listening'); tm.classList.remove('listening');
-    orb.textContent='🎙️';
-  }
-}
-
-function toggleVoiceModal(){
-  const m=document.getElementById('voice-modal');
-  if(m.classList.contains('open')){
-    closeVoiceModal();
-  } else {
-    m.classList.add('open');
-  }
-}
-function closeVoiceModal(){
-  document.getElementById('voice-modal').classList.remove('open');
-  if(recognition){try{recognition.stop();}catch(e){}}
-  setListeningUI(false);
-  hideToast();
-}
-
-function startListening(){
-  if(!SpeechRecognition){
-    showToast('⚠️ Tu navegador no soporta reconocimiento de voz. Usá Chrome.');
-    speak('Tu navegador no soporta reconocimiento de voz');
-    return;
-  }
-  if(isListening){
-    try{recognition.stop();}catch(e){}
-    return;
-  }
-
-  recognition=new SpeechRecognition();
-  recognition.lang='es-AR';
-  recognition.continuous=false;
-  recognition.interimResults=true;
-  recognition.maxAlternatives=1;
-
-  recognition.onstart=()=>{
-    setListeningUI(true);
-    document.getElementById('vm-transcript').textContent='Escuchando…';
-    showToast('Escuchando…',99999,true);
-  };
-
-  recognition.onresult=(e)=>{
-    let interim='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal){
-        processVoiceCmd(e.results[i][0].transcript.trim());
-      } else {
-        interim=e.results[i][0].transcript;
-        document.getElementById('vm-transcript').textContent=interim||'…';
-      }
-    }
-  };
-
-  recognition.onerror=(e)=>{
-    setListeningUI(false);
-    hideToast();
-    const msgs={
-      'not-allowed':'Permiso de micrófono denegado. Habilitalo en el navegador.',
-      'no-speech':'No se detectó voz. Intentá de nuevo.',
-      'network':'Error de red.',
-    };
-    showToast('⚠️ '+(msgs[e.error]||'Error: '+e.error));
-    document.getElementById('vm-transcript').textContent='Error. Intentá de nuevo.';
-  };
-
-  recognition.onend=()=>{
-    setListeningUI(false);
-    hideToast();
-  };
-
-  recognition.start();
-}
-
-/* ── SIMULACIÓN de comando (botones de ejemplo) ── */
-function simulateCmd(text){
-  document.getElementById('vm-transcript').textContent='"'+text+'"';
-  processVoiceCmd(text);
-}
-
-/* ── PROCESAMIENTO DE COMANDOS ── */
-function processVoiceCmd(text){
-  hideToast();
-  const t=text.toLowerCase();
-  document.getElementById('vm-transcript').textContent='"'+text+'"';
-
-  // NAVEGAR
-  const navMap={
-    dashboard:['dashboard','inicio','panel','home'],
-    agenda:['agenda','calendario','reuniones','eventos'],
-    licitaciones:['licitaciones','licitación','seguimiento','expediente'],
-    alertas:['alertas','alerta','notificaciones'],
-    comprar:['comprar','búsqueda','buscar en comprar','comprar.gob'],
-    contactos:['contactos','contacto','proveedores','proveedor'],
-  };
-  for(const[sec,kws]of Object.entries(navMap)){
-    if(kws.some(k=>t.includes(k))){
-      if(t.includes('ir a')||t.includes('abrir')||t.includes('mostrar')||t.includes('ver')||
-         (t.includes('ir')||t.includes('naveg'))){
-        const btns=document.querySelectorAll('.nav-item');
-        let found=null;
-        btns.forEach(b=>{if(b.textContent.toLowerCase().includes(sec.slice(0,5)))found=b;});
-        go(sec,found);
-        speak('Yendo a '+TITLES[sec]);
-        showToast('→ '+TITLES[sec]);
-        return;
-      }
-    }
-  }
-
-  // AGENDAR REUNIÓN
-  if(t.includes('agenda')||t.includes('reunión')||t.includes('reunión')||t.includes('agendar')||t.includes('tarea')||t.includes('llamada')){
-    const tipo = t.includes('tarea')?'Tarea':t.includes('llamada')?'Llamada':t.includes('plazo')?'Plazo':'Reunión';
-    const td=today();
-    let fecha=td;
-    if(t.includes('mañana')) fecha=new Date(Date.now()+864e5).toISOString().slice(0,10);
-    else if(t.includes('pasado mañana')) fecha=new Date(Date.now()+2*864e5).toISOString().slice(0,10);
-    else if(t.includes('lunes')) fecha=nextWeekday(1);
-    else if(t.includes('martes')) fecha=nextWeekday(2);
-    else if(t.includes('miércoles')||t.includes('miercoles')) fecha=nextWeekday(3);
-    else if(t.includes('jueves')) fecha=nextWeekday(4);
-    else if(t.includes('viernes')) fecha=nextWeekday(5);
-
-    // hora
-    let hora='09:00';
-    const horaMatch=t.match(/(\d{1,2})(?::(\d{2}))?\s*(hs|horas|a las)?/);
-    if(horaMatch){const h=parseInt(horaMatch[1]);if(h>=1&&h<=23)hora=String(h).padStart(2,'0')+':'+(horaMatch[2]||'00');}
-
-    // título
-    let titulo=text;
-    const stopWords=['agenda','agendar','reunión','reunión','tarea','para','mañana','hoy','pasado','lunes','martes','miércoles','jueves','viernes','a las','las','hs','horas','llamada'];
-    stopWords.forEach(w=>{titulo=titulo.replace(new RegExp(w,'gi'),'');});
-    titulo=titulo.replace(/\s+/g,' ').trim()||tipo+' agendada';
-    titulo=titulo.charAt(0).toUpperCase()+titulo.slice(1);
-
-    showQuickModal(
-      'Confirmar '+tipo,
-      `<div class="form-group"><label class="form-label">Tipo</label><select id="q-tipo"><option${tipo==='Reunión'?' selected':''}>Reunión</option><option${tipo==='Tarea'?' selected':''}>Tarea</option><option${tipo==='Llamada'?' selected':''}>Llamada</option><option${tipo==='Plazo'?' selected':''}>Plazo</option></select></div>
-       <div class="form-group"><label class="form-label">Título</label><input type="text" id="q-titulo" value="${titulo}"></div>
-       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-         <div class="form-group"><label class="form-label">Fecha</label><input type="date" id="q-fecha" value="${fecha}"></div>
-         <div class="form-group"><label class="form-label">Hora</label><input type="time" id="q-hora" value="${hora}"></div>
-       </div>
-       <div class="form-group"><label class="form-label">Notas</label><textarea id="q-notas" placeholder="Detalles..."></textarea></div>`,
-      ()=>{
-        const ev={tipo:document.getElementById('q-tipo').value,titulo:document.getElementById('q-titulo').value,fecha:document.getElementById('q-fecha').value,hora:document.getElementById('q-hora').value,notas:document.getElementById('q-notas').value};
-        S.eventos.push(ev); save(); renderDash();
-        speak('Evento guardado: '+ev.titulo);
-        showToast('✅ Evento guardado: '+ev.titulo);
-        closeM('m-quick'); closeVoiceModal();
-      }
-    );
-    speak('Completá los detalles para agendar '+titulo);
-    return;
-  }
-
-  // BUSCAR EN COMPRAR
-  if(t.includes('buscar')||t.includes('búsqueda')){
-    let query=text.replace(/buscar|búsqueda|en comprar|comprar/gi,'').trim();
-    if(!query)query='repuestos aeronáuticos';
-    const url='https://comprar.gob.ar/Compras.aspx?qs='+encodeURIComponent(query);
-    showQuickModal(
-      'Buscar en Comprar.gob.ar',
-      `<p style="font-size:13px;color:var(--text-2);margin-bottom:12px">¿Abrir búsqueda de <strong>"${query}"</strong> en el sistema COMPRAR?</p>
-       <input type="text" id="q-query" value="${query}" style="margin-bottom:8px">
-       <div style="font-size:12px;color:var(--text-3);word-break:break-all">${url}</div>`,
-      ()=>{
-        const q2=document.getElementById('q-query').value;
-        window.open('https://comprar.gob.ar/Compras.aspx?qs='+encodeURIComponent(q2),'_blank');
-        closeM('m-quick'); closeVoiceModal();
-      }
-    );
-    speak('Buscando '+query+' en Comprar');
-    return;
-  }
-
-  // NUEVA ALERTA
-  if(t.includes('alerta')||t.includes('vencimiento')||t.includes('recordatorio')){
-    let titulo=text.replace(/nueva alerta|alerta|crear|agregar|vencimiento|recordatorio/gi,'').trim();
-    titulo=titulo.charAt(0).toUpperCase()+titulo.slice(1)||'Nueva alerta';
-    const tomorrow=new Date(Date.now()+864e5).toISOString().slice(0,10);
-    showQuickModal(
-      'Nueva Alerta',
-      `<div class="form-group"><label class="form-label">Título</label><input type="text" id="q-atitulo" value="${titulo}"></div>
-       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-         <div class="form-group"><label class="form-label">Fecha límite</label><input type="date" id="q-afecha" value="${tomorrow}"></div>
-         <div class="form-group"><label class="form-label">Prioridad</label><select id="q-aprio"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option></select></div>
-       </div>
-       <div class="form-group"><label class="form-label">Descripción</label><textarea id="q-adesc"></textarea></div>`,
-      ()=>{
-        S.alertas.push({tipo:'Vencimiento de plazo',titulo:document.getElementById('q-atitulo').value,fecha:document.getElementById('q-afecha').value,prio:document.getElementById('q-aprio').value,desc:document.getElementById('q-adesc').value,done:false});
-        save(); renderDash();
-        speak('Alerta guardada');
-        showToast('✅ Alerta creada');
-        closeM('m-quick'); closeVoiceModal();
-      }
-    );
-    speak('Completá los datos de la nueva alerta');
-    return;
-  }
-
-  // LICITACIONES ACTIVAS
-  if(t.includes('licitacion')||t.includes('licitación')||t.includes('expediente')){
-    const activas=S.lics.filter(l=>l.est!=='Adjudicada'&&l.est!=='No adjudicada');
-    speak(`Tenés ${activas.length} licitaciones activas`);
-    showToast(`📋 ${activas.length} licitaciones activas`);
-    go('licitaciones',null);
-    return;
-  }
-
-  // NO ENTENDIDO
-  speak('No entendí el comando. Podés decir: agenda reunión, buscar turbinas, nueva alerta, o ir a licitaciones.');
-  showToast('🤔 No entendí. Intentá: "agenda reunión con ANAC mañana" o "buscar turbinas"');
-  document.getElementById('vm-transcript').textContent='"'+text+'" — Comando no reconocido';
-}
-
-function nextWeekday(day){
-  const d=new Date();
-  let diff=day-d.getDay();
-  if(diff<=0)diff+=7;
-  return new Date(d.getTime()+diff*864e5).toISOString().slice(0,10);
-}
-
-function showQuickModal(title, body, onConfirm){
-  document.getElementById('quick-title').textContent=title;
-  document.getElementById('quick-body').innerHTML=body;
-  document.getElementById('quick-confirm').onclick=onConfirm;
-  openM('m-quick');
-}
-
-/* ══════════════════════════════════════════
-   DASHBOARD
-══════════════════════════════════════════ */
+/* ═══ DASHBOARD ═══ */
 function renderDash(){
-  const td=today();
-  const activas=S.lics.filter(l=>l.est!=='Adjudicada'&&l.est!=='No adjudicada');
-  const semana=S.lics.filter(l=>{const d=daysLeft(l.vence);return d!==null&&d>=0&&d<=7;});
-  const hoyEvs=S.eventos.filter(e=>e.fecha===td);
-  const urgentes=S.alertas.filter(a=>a.prio==='alta'&&!a.done);
-  document.getElementById('s-activas').textContent=activas.length;
-  document.getElementById('s-semana').textContent=semana.length;
-  document.getElementById('s-hoy').textContent=hoyEvs.length;
-  document.getElementById('s-urgentes').textContent=urgentes.length;
-  document.getElementById('nb-lic').textContent=activas.length;
+  const td=tod();
+  const act=S.lics.filter(l=>l.est!=='Adjudicada'&&l.est!=='No adjudicada');
+  const sem=S.lics.filter(l=>{const d=dl(l.vence);return d!==null&&d>=0&&d<=7;});
+  const hev=S.eventos.filter(e=>e.fecha===td);
+  const urg=S.alertas.filter(a=>a.prio==='alta'&&!a.done);
+  document.getElementById('s-act').textContent=act.length;
+  document.getElementById('s-sem').textContent=sem.length;
+  document.getElementById('s-hoy').textContent=hev.length;
+  document.getElementById('s-urg').textContent=urg.length;
+  document.getElementById('nb-lic').textContent=act.length;
   document.getElementById('nb-al').textContent=S.alertas.filter(a=>!a.done).length;
-
-  const sorted=[...S.lics].filter(l=>l.vence).sort((a,b)=>a.vence.localeCompare(b.vence)).slice(0,5);
-  document.getElementById('d-venc').innerHTML=sorted.length
-    ?sorted.map(l=>{const d=daysLeft(l.vence);return`<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border-soft)"><div style="flex:1"><div style="font-size:13px;font-weight:500">${l.desc}</div><div style="font-size:11.5px;color:var(--text-3);font-family:'DM Mono',monospace">${l.id}</div></div>${daysPill(d)}</div>`;}).join('')
-    :`<div class="empty"><div class="empty-icon">◻</div>Sin licitaciones</div>`;
-
-  document.getElementById('d-agenda').innerHTML=hoyEvs.length
-    ?hoyEvs.sort((a,b)=>a.hora.localeCompare(b.hora)).map(e=>`<div class="tl-row"><div class="tl-dot ${TL_DOT[e.tipo]||'dot-cyan'}"></div><div class="tl-time">${e.hora}</div><div class="tl-body"><div class="tl-title">${e.titulo}</div><div class="tl-meta">${e.tipo}</div></div></div>`).join('')
-    :`<div class="empty"><div class="empty-icon">◷</div>Sin eventos hoy</div>`;
-
-  const actAl=S.alertas.filter(a=>!a.done).slice(0,4);
-  document.getElementById('d-alertas').innerHTML=actAl.length
-    ?actAl.map(a=>`<div class="alert-row ${PRIO_CLS[a.prio]}"><div class="alert-icon">${PRIO_ICON[a.prio]}</div><div class="alert-text"><div class="alert-title">${a.titulo}</div><div class="alert-sub">${fmtDate(a.fecha)} · ${a.tipo}</div></div></div>`).join('')
-    :`<div class="empty"><div class="empty-icon">◉</div>Sin alertas activas</div>`;
+  const srt=[...S.lics].filter(l=>l.vence).sort((a,b)=>a.vence.localeCompare(b.vence)).slice(0,5);
+  document.getElementById('d-venc').innerHTML=srt.length?srt.map(l=>`<div style="display:flex;align-items:center;gap:9px;padding:9px 14px;border-bottom:1px solid var(--border-soft)"><div style="flex:1"><div style="font-size:12.5px;font-weight:500">${l.desc}</div><div style="font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace">${l.id}</div></div>${dpill(dl(l.vence))}</div>`).join(''):`<div class="empty"><div class="empty-icon">◻</div>Sin licitaciones</div>`;
+  document.getElementById('d-agenda').innerHTML=hev.length?hev.sort((a,b)=>a.hora.localeCompare(b.hora)).map(e=>`<div class="tl-row"><div class="tl-dot ${TD[e.tipo]||'dc'}"></div><div class="tl-time">${e.hora}</div><div class="tl-body"><div class="tl-title">${e.titulo}</div><div class="tl-meta">${e.tipo}</div></div></div>`).join(''):`<div class="empty"><div class="empty-icon">◷</div>Sin eventos hoy</div>`;
+  const aal=S.alertas.filter(a=>!a.done).slice(0,4);
+  document.getElementById('d-alertas').innerHTML=aal.length?aal.map(a=>`<div class="al-row ${PC[a.prio]}"><div class="al-icon">${PI[a.prio]}</div><div class="al-text"><div class="al-title">${a.titulo}</div><div class="al-sub">${fd(a.fecha)}</div></div></div>`).join(''):`<div class="empty"><div class="empty-icon">◉</div>Sin alertas activas</div>`;
 }
 
-/* ══════════════════════════════════════════
-   AGENDA
-══════════════════════════════════════════ */
-let calY=new Date().getFullYear(),calM=new Date().getMonth(),filterD=null;
+/* ═══ AGENDA ═══ */
+let calY=new Date().getFullYear(),calM=new Date().getMonth(),fDay=null;
 function renderCal(){
-  const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const td=today(),first=new Date(calY,calM,1),dim=new Date(calY,calM+1,0).getDate();
-  const evDates=new Set(S.eventos.map(e=>e.fecha));
-  let g=`<div class="cal-nav-row"><button class="cal-nav" onclick="calNav(-1)">‹</button><span>${MONTHS[calM]} ${calY}</span><button class="cal-nav" onclick="calNav(1)">›</button></div><div class="cal-grid">${['Do','Lu','Ma','Mi','Ju','Vi','Sa'].map(d=>`<div class="cal-dn">${d}</div>`).join('')}`;
+  const MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const td=tod(),first=new Date(calY,calM,1),dim=new Date(calY,calM+1,0).getDate();
+  const ed=new Set(S.eventos.map(e=>e.fecha));
+  let g=`<div class="cal-nav-row"><button class="cal-nav" onclick="calN(-1)">‹</button><span>${MN[calM]} ${calY}</span><button class="cal-nav" onclick="calN(1)">›</button></div><div class="cal-grid">${['Do','Lu','Ma','Mi','Ju','Vi','Sa'].map(d=>`<div class="cal-dn">${d}</div>`).join('')}`;
   for(let i=0;i<first.getDay();i++)g+=`<div class="cal-d dim"></div>`;
-  for(let d=1;d<=dim;d++){
-    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    g+=`<div class="cal-d${ds===td?' today':''}${evDates.has(ds)?' has-ev':''}" onclick="filterDay('${ds}')">${d}</div>`;
-  }
+  for(let d=1;d<=dim;d++){const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;g+=`<div class="cal-d${ds===td?' today':''}${ed.has(ds)?' has-ev':''}" onclick="fD('${ds}')">${d}</div>`;}
   g+=`</div>`;
-  document.getElementById('cal').innerHTML=g;
-  renderEvList();
+  document.getElementById('cal').innerHTML=g;renderEvList();
 }
-function calNav(dir){calM+=dir;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
-function filterDay(ds){filterD=filterD===ds?null:ds;renderCal();}
+function calN(dir){calM+=dir;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
+function fD(ds){fDay=fDay===ds?null:ds;renderCal();}
 function renderEvList(){
-  const list=filterD?S.eventos.filter(e=>e.fecha===filterD):[...S.eventos].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
-  document.getElementById('ag-title').textContent=filterD?`Eventos — ${fmtDate(filterD)}`:'Todos los eventos';
-  document.getElementById('ev-list').innerHTML=list.length
-    ?list.map((e,i)=>`<div class="contact-item"><div class="tl-dot ${TL_DOT[e.tipo]||'dot-cyan'}" style="margin-top:0"></div><div style="flex:1"><div class="c-name">${e.titulo}</div><div class="c-sub">${fmtDate(e.fecha)} ${e.hora} · ${e.tipo}</div>${e.notas?`<div class="c-contact">${e.notas}</div>`:''}</div><button class="btn btn-danger btn-sm" onclick="delEvento(${i})">✕</button></div>`).join('')
-    :`<div class="empty"><div class="empty-icon">◷</div>Sin eventos</div>`;
+  const list=fDay?S.eventos.filter(e=>e.fecha===fDay):[...S.eventos].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
+  document.getElementById('ag-title').textContent=fDay?`Eventos — ${fd(fDay)}`:'Todos los eventos';
+  document.getElementById('ev-list').innerHTML=list.length?list.map((e,i)=>`<div class="con-item"><div class="tl-dot ${TD[e.tipo]||'dc'}" style="margin-top:0"></div><div style="flex:1"><div class="c-name">${e.titulo}</div><div class="c-sub">${fd(e.fecha)} ${e.hora} · ${e.tipo}</div>${e.notas?`<div class="c-mono">${e.notas}</div>`:''}</div><button class="btn btn-gcal btn-sm" onclick="addToGCalSingle(${i})" title="Agregar a Google Calendar">📅</button><button class="btn btn-danger btn-sm" onclick="delEv(${i})">✕</button></div>`).join(''):`<div class="empty"><div class="empty-icon">◷</div>Sin eventos</div>`;
 }
-function saveEvento(){
-  const t=document.getElementById('e-titulo').value.trim();
-  if(!t)return alert('Ingresá un título.');
-  S.eventos.push({tipo:document.getElementById('e-tipo').value,titulo:t,fecha:document.getElementById('e-fecha').value,hora:document.getElementById('e-hora').value,notas:document.getElementById('e-notas').value});
-  save();closeM('m-evento');renderCal();renderDash();
+async function addToGCalSingle(i){
+  if(!gcalReady){await connectGCal();return;}
+  const e=S.eventos[i];
+  const ok=await addToGCal(e.titulo,e.fecha,e.hora,e.notas);
+  if(ok)showToast('📅 Evento agregado a Google Calendar: '+e.titulo);
+}
+async function saveEvento(){
+  const t=document.getElementById('e-titulo').value.trim();if(!t)return alert('Ingresá un título.');
+  const ev={tipo:document.getElementById('e-tipo').value,titulo:t,fecha:document.getElementById('e-fecha').value,hora:document.getElementById('e-hora').value,notas:document.getElementById('e-notas').value};
+  S.eventos.push(ev);save();closeM('m-evento');renderCal();renderDash();
   ['e-titulo','e-fecha','e-hora','e-notas'].forEach(id=>document.getElementById(id).value='');
+  if(gcalReady&&ev.fecha){const ok=await addToGCal(ev.titulo,ev.fecha,ev.hora,ev.notas);if(ok)showToast('✅ Guardado + agregado a Google Calendar');}
+  else showToast('✅ Evento guardado');
 }
-function delEvento(i){if(!confirm('¿Eliminar?'))return;S.eventos.splice(i,1);save();renderCal();renderDash();}
+function delEv(i){if(!confirm('¿Eliminar?'))return;S.eventos.splice(i,1);save();renderCal();}
 function exportICS(){
   const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//SAS//ES'];
-  S.eventos.forEach(e=>{const dt=e.fecha.replace(/-/g,'')+e.hora.replace(':','')+'00';lines.push('BEGIN:VEVENT',`SUMMARY:${e.titulo}`,`DTSTART:${dt}`,`DTEND:${dt}`,`DESCRIPTION:${e.notas||''}`,`CATEGORIES:${e.tipo}`,'END:VEVENT');});
+  S.eventos.forEach(e=>{const dt=e.fecha.replace(/-/g,'')+e.hora.replace(':','')+'00';lines.push('BEGIN:VEVENT',`SUMMARY:${e.titulo}`,`DTSTART:${dt}`,`DTEND:${dt}`,`DESCRIPTION:${e.notas||''}`,'END:VEVENT');});
   lines.push('END:VCALENDAR');
-  const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sas-agenda.ics';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/calendar'}));a.download='sas-agenda.ics';a.click();
 }
 
-/* ══════════════════════════════════════════
-   LICITACIONES
-══════════════════════════════════════════ */
+/* ═══ LICITACIONES ═══ */
 function renderLics(){
-  const fil=document.getElementById('fil-estado').value;
+  const fil=document.getElementById('fil-est').value;
   const data=fil?S.lics.filter(l=>l.est===fil):S.lics;
-  document.getElementById('tb-lics').innerHTML=data.length
-    ?data.map((l,i)=>`<tr><td><span style="font-family:'DM Mono',monospace;font-size:12px">${l.id}</span></td><td><div style="font-weight:500;font-size:13.5px">${l.desc}</div>${l.notas?`<div style="font-size:11.5px;color:var(--text-3)">${l.notas.slice(0,50)}${l.notas.length>50?'…':''}</div>`:''}</td><td style="font-size:13px;color:var(--text-2)">${l.org}</td><td><span class="badge ${EST_B[l.est]||'badge-muted'}">${l.est}</span></td><td style="font-family:'DM Mono',monospace;font-size:12px">${fmtDate(l.vence)}</td><td>${daysPill(daysLeft(l.vence))}</td><td><div style="display:flex;gap:5px">${l.url?`<button class="btn btn-ghost btn-sm" onclick="window.open('${l.url}','_blank')">↗</button>`:''}<button class="btn btn-ghost btn-sm" onclick="editLic(${i})">✎</button><button class="btn btn-danger btn-sm" onclick="delLic(${i})">✕</button></div></td></tr>`).join('')
-    :`<tr><td colspan="7"><div class="empty"><div class="empty-icon">◻</div>Sin licitaciones</div></td></tr>`;
+  document.getElementById('tb-lics').innerHTML=data.length?data.map((l,i)=>`<tr><td><span style="font-family:'DM Mono',monospace;font-size:11px">${l.id}</span></td><td><div style="font-weight:500">${l.desc}</div></td><td style="color:var(--text-2)">${l.org}</td><td><span class="badge ${EB[l.est]||'b-muted'}">${l.est}</span></td><td style="font-family:'DM Mono',monospace;font-size:11.5px">${fd(l.vence)}</td><td>${dpill(dl(l.vence))}</td><td><div style="display:flex;gap:4px">${l.url?`<button class="btn btn-ghost btn-sm" onclick="window.open('${l.url}','_blank')">↗</button>`:''}<button class="btn btn-ghost btn-sm" onclick="editLic(${i})">✎</button><button class="btn btn-danger btn-sm" onclick="delLic(${i})">✕</button></div></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty">Sin licitaciones</div></td></tr>`;
 }
 function saveLic(){
-  const id=document.getElementById('l-id').value.trim();
-  if(!id)return alert('Ingresá el expediente.');
+  const id=document.getElementById('l-id').value.trim();if(!id)return alert('Ingresá el expediente.');
   S.lics.push({id,desc:document.getElementById('l-desc').value,org:document.getElementById('l-org').value,est:document.getElementById('l-est').value,vence:document.getElementById('l-vence').value,monto:document.getElementById('l-monto').value,url:document.getElementById('l-url').value,notas:document.getElementById('l-notas').value});
-  save();closeM('m-lic');renderLics();renderDash();
-  ['l-id','l-desc','l-org','l-vence','l-monto','l-url','l-notas'].forEach(id=>document.getElementById(id).value='');
+  save();closeM('m-lic');renderLics();renderDash();['l-id','l-desc','l-org','l-vence','l-monto','l-url','l-notas'].forEach(id=>document.getElementById(id).value='');
 }
 function delLic(i){if(!confirm('¿Eliminar?'))return;S.lics.splice(i,1);save();renderLics();renderDash();}
 function editLic(i){
   const l=S.lics[i];
-  ['l-id','l-desc','l-org','l-est','l-vence','l-monto','l-url','l-notas'].forEach((id,j)=>{
-    document.getElementById(id).value=[l.id,l.desc,l.org,l.est,l.vence,l.monto,l.url||'',l.notas][j];
-  });
+  ['l-id','l-desc','l-org','l-est','l-vence','l-monto','l-url','l-notas'].forEach((id,j)=>document.getElementById(id).value=[l.id,l.desc,l.org,l.est,l.vence,l.monto,l.url||'',l.notas][j]);
   S.lics.splice(i,1);save();openM('m-lic');
 }
 
-/* ══════════════════════════════════════════
-   ALERTAS
-══════════════════════════════════════════ */
+/* ═══ ALERTAS ═══ */
 function renderAl(){
-  document.getElementById('al-list').innerHTML=S.alertas.length
-    ?S.alertas.map((a,i)=>`<div class="alert-row ${PRIO_CLS[a.prio]} ${a.done?'alert-done':''}"><div class="alert-icon">${PRIO_ICON[a.prio]}</div><div class="alert-text"><div class="alert-title">${a.titulo}</div><div class="alert-sub">${a.tipo} · ${fmtDate(a.fecha)}</div>${a.desc?`<div style="font-size:12px;color:var(--text-3);margin-top:3px">${a.desc}</div>`:''}</div><div style="display:flex;gap:5px;flex-shrink:0"><button class="btn btn-success btn-sm" onclick="toggleAl(${i})">${a.done?'↩':'✓'}</button><button class="btn btn-danger btn-sm" onclick="delAl(${i})">✕</button></div></div>`).join('')
-    :`<div class="empty"><div class="empty-icon">◉</div>Sin alertas</div>`;
+  document.getElementById('al-list').innerHTML=S.alertas.length?S.alertas.map((a,i)=>`<div class="al-row ${PC[a.prio]} ${a.done?'al-done':''}"><div class="al-icon">${PI[a.prio]}</div><div class="al-text"><div class="al-title">${a.titulo}</div><div class="al-sub">${a.tipo} · ${fd(a.fecha)}</div>${a.desc?`<div style="font-size:11.5px;margin-top:2px">${a.desc}</div>`:''}</div><div style="display:flex;gap:4px;flex-shrink:0"><button class="btn btn-success btn-sm" onclick="togAl(${i})">${a.done?'↩':'✓'}</button><button class="btn btn-danger btn-sm" onclick="delAl(${i})">✕</button></div></div>`).join(''):`<div class="empty">Sin alertas</div>`;
 }
 function saveAlerta(){
-  const t=document.getElementById('a-titulo').value.trim();
-  if(!t)return alert('Ingresá un título.');
+  const t=document.getElementById('a-titulo').value.trim();if(!t)return alert('Ingresá un título.');
   S.alertas.push({tipo:document.getElementById('a-tipo').value,titulo:t,fecha:document.getElementById('a-fecha').value,prio:document.getElementById('a-prio').value,desc:document.getElementById('a-desc').value,done:false});
-  save();closeM('m-alerta');renderAl();renderDash();
-  ['a-titulo','a-fecha','a-desc'].forEach(id=>document.getElementById(id).value='');
+  save();closeM('m-alerta');renderAl();renderDash();['a-titulo','a-fecha','a-desc'].forEach(id=>document.getElementById(id).value='');
 }
-function toggleAl(i){S.alertas[i].done=!S.alertas[i].done;save();renderAl();renderDash();}
+function togAl(i){S.alertas[i].done=!S.alertas[i].done;save();renderAl();renderDash();}
 function delAl(i){if(!confirm('¿Eliminar?'))return;S.alertas.splice(i,1);save();renderAl();renderDash();}
 
-/* ══════════════════════════════════════════
-   COMPRAR
-══════════════════════════════════════════ */
-const KWS=['repuestos aeronáuticos','turbinas','tren de aterrizaje','aviónica','filtros hidráulicos','mantenimiento aeronaves','Boeing','Airbus','Pratt & Whitney','instrumental vuelo','hélices','neumáticos aeronaves'];
+/* ═══ CARPETAS ═══ */
+const FE_ICON={'En preparación':'📝','Oferta presentada':'📤','Adjudicada':'🏆','No adjudicada':'❌','Facturada':'💰'};
+function renderFolders(){
+  document.getElementById('folder-grid').innerHTML=S.folders.length?S.folders.map((f,i)=>`
+    <div class="folder-card" onclick="openFolder(${i})">
+      <div class="fc-icon">${FE_ICON[f.estado]||'📁'}</div>
+      <div class="fc-id">${f.id}</div>
+      <div style="margin-bottom:5px"><span class="badge ${EB[f.estado]||'b-muted'}">${f.estado}</span></div>
+      <div class="fc-desc">${f.desc}</div>
+      <div class="fc-meta">${f.org}</div>
+      <div class="fc-meta">Apertura: ${fd(f.apertura)}</div>
+      <div class="fc-meta">${(f.rengls||[]).length} renglones · ${fARS(f.monto)}</div>
+      <div class="fc-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" onclick="window.open('https://comprar.gob.ar/Compras.aspx?qs='+encodeURIComponent('${f.id}'),'_blank')">↗ Comprar</button>
+        <button class="btn btn-danger btn-sm" onclick="delFolder(${i})">✕</button>
+      </div>
+    </div>`).join(''):`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📁</div>No hay carpetas. Creá una para comenzar.</div>`;
+}
+
+async function saveFolder(){
+  const id=document.getElementById('f-id').value.trim();if(!id)return alert('Ingresá el número de proceso.');
+  const apertura=document.getElementById('f-apertura').value;
+  const consultas=document.getElementById('f-consultas').value;
+  const desc=document.getElementById('f-desc').value;
+  const org=document.getElementById('f-org').value;
+  const f={id,desc,org,apertura,consultas,duracion:document.getElementById('f-duracion').value,monto:document.getElementById('f-monto').value,proc:document.getElementById('f-proc').value,lugar:document.getElementById('f-lugar').value,estado:'En preparación',docs:{pliego:[],oferta:[],adjud:[],fact:[]},rengls:[],notas:''};
+  S.folders.push(f);
+  // Auto-agenda
+  if(apertura){
+    S.eventos.push({tipo:'Plazo',titulo:`📋 Apertura licitación ${id}`,fecha:apertura,hora:'07:00',notas:`${org} · ${desc}`});
+    const d48=new Date(new Date(apertura).getTime()-2*864e5).toISOString().slice(0,10);
+    S.alertas.push({tipo:'Vencimiento de plazo',titulo:`⚠️ Apertura en 48hs — ${id}`,fecha:d48,prio:'alta',desc:`Apertura: ${fd(apertura)} · ${desc}`,done:false});
+    // Add to Google Calendar
+    if(gcalReady){await addToGCal(`📋 Apertura licitación ${id}`,apertura,'07:00',`${org} · ${desc}`);}
+  }
+  if(consultas){
+    S.eventos.push({tipo:'Plazo',titulo:`❓ Fin consultas ${id}`,fecha:consultas,hora:'07:00',notas:'Último día para hacer consultas'});
+    if(gcalReady){await addToGCal(`❓ Fin consultas ${id}`,consultas,'07:00','Último día para hacer consultas');}
+  }
+  save();closeM('m-new-folder');renderFolders();renderDash();
+  showToast('✅ Carpeta creada'+(gcalReady?' + eventos en Google Calendar':''));
+  ['f-id','f-desc','f-org','f-apertura','f-consultas','f-duracion','f-monto','f-lugar'].forEach(id=>document.getElementById(id).value='');
+}
+
+function delFolder(i){if(!confirm('¿Eliminar carpeta?'))return;S.folders.splice(i,1);save();renderFolders();}
+
+let curFI=null;
+function openFolder(i){
+  curFI=i;const f=S.folders[i];
+  document.getElementById('fm-title').textContent=`📁 ${f.id}`;
+  document.getElementById('fm-meta').textContent=`${f.org} · ${f.proc||''} · Apertura: ${fd(f.apertura)} · ${fARS(f.monto)}`;
+  document.getElementById('fm-estado').value=f.estado;
+  document.getElementById('fm-notas').value=f.notas||'';
+  document.getElementById('fm-info-body').innerHTML=`
+    <div class="three-col" style="margin-bottom:13px">
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Descripción</div><div style="font-size:13px">${f.desc}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Organismo</div><div style="font-size:13px">${f.org}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Procedimiento</div><div style="font-size:13px">${f.proc||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Apertura</div><div style="font-size:13px;font-weight:600;color:var(--red)">${fd(f.apertura)}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Fin consultas</div><div style="font-size:13px">${fd(f.consultas)}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Duración</div><div style="font-size:13px">${f.duracion||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Monto estimado</div><div style="font-size:13px;font-weight:600">${fARS(f.monto)}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Lugar entrega</div><div style="font-size:13px">${f.lugar||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Renglones</div><div style="font-size:13px">${(f.rengls||[]).length}</div></div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="window.open('https://comprar.gob.ar/Compras.aspx?qs='+encodeURIComponent('${f.id}'),'_blank')">↗ Abrir en Comprar.gob.ar</button>
+      <button class="btn btn-gcal btn-sm" onclick="syncFolderToGCal(${i})">📅 Sincronizar con Google Calendar</button>
+    </div>`;
+  renderRengls(f);renderDocTabs(f);renderCostos(f);
+  switchFTab('info',document.querySelector('#m-folder .ftab'));
+  openM('m-folder');
+}
+
+async function syncFolderToGCal(i){
+  if(!gcalReady){await connectGCal();return;}
+  const f=S.folders[i];
+  let ok=0;
+  if(f.apertura){const r=await addToGCal(`📋 Apertura ${f.id}`,f.apertura,'07:00',f.desc);if(r)ok++;}
+  if(f.consultas){const r=await addToGCal(`❓ Fin consultas ${f.id}`,f.consultas,'07:00','');if(r)ok++;}
+  showToast(`📅 ${ok} eventos de licitación sincronizados`);
+}
+
+function updateFolderEstado(){if(curFI===null)return;S.folders[curFI].estado=document.getElementById('fm-estado').value;save();renderFolders();showToast('✅ Estado actualizado');}
+
+/* RENGLONES */
+function renderRengls(f){
+  const rs=f.rengls||[];
+  document.getElementById('rengls-list').innerHTML=rs.length?rs.map((r,ri)=>{
+    const best=getBestProv(r.provs);
+    const provHTML=r.provs&&r.provs.length?`<div style="margin-top:8px">${r.provs.map((p,pi)=>`
+      <div class="prov-row">
+        <div style="flex:1">
+          <div style="font-size:12.5px;font-weight:500">${p.nombre}${best&&p===best?'<span class="prov-best" style="margin-left:5px">✓ MEJOR PRECIO</span>':''}</div>
+          ${p.link?`<a href="${p.link}" target="_blank" style="font-size:11px;color:var(--cyan)">↗ Ver proveedor</a>`:''}
+        </div>
+        <div style="text-align:right">
+          <div class="money money-costo">Costo: ${fARS(p.costo)}</div>
+          <div class="money money-oferta">Oferta: ${fARS(p.oferta)}</div>
+          ${p.costo&&p.oferta?`<div class="money money-ganancia">Gan: ${fARS(p.oferta-p.costo)}</div>`:''}
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="delProvRenglon(${ri},${pi})">✕</button>
+      </div>`).join('')}</div>`:'<div style="font-size:12px;color:var(--text-3);margin-top:6px">Sin proveedores aún.</div>';
+    return`<div class="renglon-card">
+      <div class="renglon-header">
+        <div class="renglon-num">${r.num}</div>
+        <div style="flex:1"><div class="renglon-desc">${r.desc}</div><div style="font-size:11px;color:var(--text-3);margin-top:1px">P/N: <span style="font-family:'DM Mono',monospace">${r.pn||'—'}</span> · Cant: ${r.cant||'—'} ${r.unit||''}</div></div>
+        <button class="btn btn-danger btn-sm" onclick="delRenglon(${ri})">✕</button>
+      </div>${provHTML}</div>`;
+  }).join(''):`<div class="empty"><div class="empty-icon">🔩</div>Sin renglones. Agregá el primero.</div>`;
+}
+function getBestProv(provs){if(!provs||!provs.length)return null;return provs.reduce((b,p)=>(!b||(p.costo||Infinity)<(b.costo||Infinity))?p:b,null);}
+function delRenglon(ri){if(!confirm('¿Eliminar renglón?'))return;S.folders[curFI].rengls.splice(ri,1);save();renderRengls(S.folders[curFI]);renderCostos(S.folders[curFI]);}
+function delProvRenglon(ri,pi){S.folders[curFI].rengls[ri].provs.splice(pi,1);save();renderRengls(S.folders[curFI]);renderCostos(S.folders[curFI]);}
+
+let provCount=1;
+function openAddRenglon(){
+  provCount=1;
+  ['r-num','r-desc','r-pn','r-cant','r-unit'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('parts-hint').style.display='none';
+  document.getElementById('prov-inputs').innerHTML=provInputHTML(0);
+  openM('m-add-renglon');
+}
+function provInputHTML(idx){
+  return`<div id="pb-${idx}" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:7px">
+    <div style="font-size:11.5px;font-weight:700;color:var(--text-2);margin-bottom:7px">Proveedor ${idx+1}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div class="form-group" style="margin-bottom:6px"><label class="form-label">Nombre</label><input type="text" id="pn-${idx}" placeholder="AeroPartes S.A."></div>
+      <div class="form-group" style="margin-bottom:6px"><label class="form-label">Costo unitario (ARS)</label><input type="number" id="pc-${idx}" placeholder="0"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Precio oferta (ARS)</label><input type="number" id="po-${idx}" placeholder="0"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Link del proveedor</label><input type="text" id="pl-${idx}" placeholder="https://..."></div>
+    </div>
+  </div>`;
+}
+function addProvInput(){document.getElementById('prov-inputs').insertAdjacentHTML('beforeend',provInputHTML(provCount));provCount++;}
+function searchPartsHint(){
+  const q=document.getElementById('r-desc').value.toLowerCase();
+  const pn=document.getElementById('r-pn').value.toLowerCase();
+  if(q.length<3&&pn.length<2){document.getElementById('parts-hint').style.display='none';return;}
+  const found=S.parts.filter(p=>p.desc.toLowerCase().includes(q)||p.pn.toLowerCase().includes(pn));
+  if(!found.length){document.getElementById('parts-hint').style.display='none';return;}
+  document.getElementById('parts-hint').style.display='block';
+  document.getElementById('parts-hint-content').innerHTML=found.slice(0,3).map(p=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600">${p.desc} <span style="font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text-3)">${p.pn}</span></div>
+        <div style="font-size:11px;color:var(--text-3)">${p.prov} · Costo hist: ${fARS(p.costo)}</div>
+        ${p.hist&&p.hist.length?`<div style="font-size:10.5px;color:var(--text-3)">Última lic: ${p.hist[p.hist.length-1].lic} (${p.hist[p.hist.length-1].fecha})</div>`:''}
+      </div>
+      <button class="btn btn-success btn-sm" onclick="useSug('${p.pn}','${p.desc.replace(/'/g,"\\'")}',${p.costo},'${p.prov}','${p.link||''}')">Usar</button>
+    </div>`).join('');
+}
+function useSug(pn,desc,costo,prov,link){
+  document.getElementById('r-pn').value=pn;document.getElementById('r-desc').value=desc;
+  document.getElementById('pn-0').value=prov;document.getElementById('pc-0').value=costo;document.getElementById('pl-0').value=link;
+  document.getElementById('parts-hint').style.display='none';
+  showToast('💡 Datos del historial aplicados — revisá y ajustá los precios');
+}
+function saveRenglon(){
+  if(curFI===null)return;
+  const desc=document.getElementById('r-desc').value.trim();if(!desc)return alert('Ingresá la descripción.');
+  const provs=[];
+  for(let i=0;i<provCount;i++){const n=document.getElementById('pn-'+i)?.value?.trim();if(n)provs.push({nombre:n,costo:parseFloat(document.getElementById('pc-'+i)?.value)||0,oferta:parseFloat(document.getElementById('po-'+i)?.value)||0,link:document.getElementById('pl-'+i)?.value||''});}
+  const r={num:parseInt(document.getElementById('r-num').value)||((S.folders[curFI].rengls||[]).length+1),desc,pn:document.getElementById('r-pn').value,cant:parseFloat(document.getElementById('r-cant').value)||1,unit:document.getElementById('r-unit').value,provs};
+  if(!S.folders[curFI].rengls)S.folders[curFI].rengls=[];
+  S.folders[curFI].rengls.push(r);
+  const pnVal=r.pn;
+  if(pnVal&&provs.length){
+    const existing=S.parts.find(p=>p.pn===pnVal);
+    const bestP=getBestProv(provs);
+    if(existing){if(bestP&&bestP.costo<existing.costo){existing.costo=bestP.costo;existing.prov=bestP.nombre;existing.link=bestP.link||existing.link;}if(!existing.hist)existing.hist=[];existing.hist.push({lic:S.folders[curFI].id,costo:bestP?.costo||0,oferta:bestP?.oferta||0,fecha:new Date().toISOString().slice(0,7)});}
+    else{S.parts.push({pn:pnVal,desc,cat:'',prov:bestP?.nombre||'',costo:bestP?.costo||0,link:bestP?.link||'',notas:'',hist:[{lic:S.folders[curFI].id,costo:bestP?.costo||0,oferta:bestP?.oferta||0,fecha:new Date().toISOString().slice(0,7)}]});}
+  }
+  save();closeM('m-add-renglon');renderRengls(S.folders[curFI]);renderCostos(S.folders[curFI]);
+  showToast('✅ Renglón guardado — base de repuestos actualizada');
+}
+
+/* DOCS */
+function switchDocTab(tab,el){
+  ['pliego','oferta','adjud','fact'].forEach(t=>{document.getElementById('docs-'+t).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('#ftc-docs .ftabs .ftab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+function triggerDoc(tab){document.getElementById('di-'+tab).click();}
+function handleDoc(tab,files){
+  if(curFI===null)return;
+  const f=S.folders[curFI];
+  if(!f.docs)f.docs={pliego:[],oferta:[],adjud:[],fact:[]};
+  Array.from(files).forEach(file=>f.docs[tab].push({name:file.name,date:new Date().toLocaleDateString('es-AR')}));
+  save();renderDocTabs(f);showToast(`✅ ${files.length} archivo(s) guardado(s)`);
+}
+function renderDocTabs(f){
+  ['pliego','oferta','adjud','fact'].forEach(tab=>{
+    const docs=(f.docs&&f.docs[tab])||[];
+    document.getElementById('doc-list-'+tab).innerHTML=docs.length?docs.map(d=>`<div class="doc-item"><span style="font-size:18px">📄</span><div style="flex:1"><div style="font-size:13px;font-weight:500">${d.name}</div><div style="font-size:11px;color:var(--text-3)">${d.date}</div></div></div>`).join(''):'';
+  });
+}
+
+/* COSTOS */
+function renderCostos(f){
+  const rs=f.rengls||[];
+  let tc=0,to=0,tg=0;
+  const rows=rs.map(r=>{const best=getBestProv(r.provs);const c=(best?.costo||0)*(r.cant||1);const o=(best?.oferta||0)*(r.cant||1);const g=o-c;tc+=c;to+=o;tg+=g;return`<tr><td>${r.num}</td><td>${r.desc}</td><td style="text-align:center">${r.cant}</td><td class="money money-costo">${fARS(best?.costo||0)}</td><td class="money money-costo">${fARS(c)}</td><td class="money money-oferta">${fARS(best?.oferta||0)}</td><td class="money money-oferta">${fARS(o)}</td><td class="money money-ganancia">${fARS(g)}</td><td style="font-size:12px;color:var(--text-3)">${best?.nombre||'—'}</td></tr>`;});
+  document.getElementById('costos-summary').innerHTML=`<div class="sum-strip"><div class="sum-chip"><div class="sc-lbl">Total Costo</div><div class="sc-val sv-red">${fARS(tc)}</div></div><div class="sum-chip"><div class="sc-lbl">Total Oferta</div><div class="sc-val sv-cyan">${fARS(to)}</div></div><div class="sum-chip"><div class="sc-lbl">Ganancia</div><div class="sc-val sv-green">${fARS(tg)}</div></div><div class="sum-chip"><div class="sc-lbl">Margen</div><div class="sc-val sv-amber">${to?Math.round((tg/to)*100)+'%':'—'}</div></div></div>`;
+  document.getElementById('costos-detail').innerHTML=rs.length?`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Descripción</th><th>Cant</th><th>Costo Unit</th><th>Total Costo</th><th>Oferta Unit</th><th>Total Oferta</th><th>Ganancia</th><th>Proveedor</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:`<div class="empty">Sin renglones</div>`;
+}
+function switchFTab(tab,el){
+  document.querySelectorAll('#m-folder .ftab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#m-folder .ftab-content').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('ftc-'+tab).classList.add('active');
+}
+function saveFolderNotas(){if(curFI===null)return;S.folders[curFI].notas=document.getElementById('fm-notas').value;save();showToast('✅ Notas guardadas');}
+
+/* ═══ BASE DE REPUESTOS ═══ */
+function renderParts(){
+  const q=(document.getElementById('parts-search')?.value||'').toLowerCase();
+  const data=q?S.parts.filter(p=>p.desc.toLowerCase().includes(q)||p.pn.toLowerCase().includes(q)||p.prov.toLowerCase().includes(q)):S.parts;
+  document.getElementById('parts-list').innerHTML=data.length?data.map((p,i)=>`
+    <div class="part-card">
+      <div class="part-header">
+        <div><div style="margin-bottom:4px"><span class="part-pn">${p.pn}</span>${p.cat?` <span class="badge b-muted" style="margin-left:4px">${p.cat}</span>`:''}</div><div class="part-desc">${p.desc}</div></div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="money money-costo" style="font-size:13px">${fARS(p.costo)}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:1px">${p.prov}</div>
+          ${p.link?`<a href="${p.link}" target="_blank" style="font-size:11px;color:var(--cyan)">↗ Ver proveedor</a>`:''}
+        </div>
+      </div>
+      ${p.hist&&p.hist.length?`<div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px">Historial</div><div class="part-hist">${p.hist.slice(-3).reverse().map(h=>`<div class="hist-row"><span class="hist-lic">${h.lic}</span><span style="color:var(--text-3)">${h.fecha}</span><span class="money money-costo">${fARS(h.costo)}</span><span class="money money-oferta">${fARS(h.oferta)}</span><span class="money money-ganancia">${fARS(h.oferta-h.costo)}</span></div>`).join('')}</div>`:''}
+      <div style="display:flex;gap:5px;margin-top:9px">${p.notas?`<div style="flex:1;font-size:11.5px;color:var(--text-3)">${p.notas}</div>`:''}<button class="btn btn-danger btn-sm" onclick="delPart(${i})">✕ Eliminar</button></div>
+    </div>`).join(''):`<div class="empty"><div class="empty-icon">🔩</div>Sin repuestos. Agregá el primero o cargá renglones en una carpeta.</div>`;
+}
+function savePart(){
+  const pn=document.getElementById('p-pn').value.trim(),desc=document.getElementById('p-desc').value.trim();
+  if(!pn||!desc)return alert('Ingresá N° de parte y descripción.');
+  S.parts.push({pn,desc,cat:document.getElementById('p-cat').value,prov:document.getElementById('p-prov').value,costo:parseFloat(document.getElementById('p-costo').value)||0,link:document.getElementById('p-link').value,notas:document.getElementById('p-notas').value,hist:[]});
+  save();closeM('m-new-part');renderParts();['p-pn','p-desc','p-cat','p-prov','p-costo','p-link','p-notas'].forEach(id=>document.getElementById(id).value='');
+}
+function delPart(i){if(!confirm('¿Eliminar repuesto?'))return;S.parts.splice(i,1);save();renderParts();}
+
+/* ═══ CARTERA EXCEL ═══ */
+let carteraData=[];
+function handleXLDrop(e){e.preventDefault();document.getElementById('xl-drop').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)handleXLFile(f);}
+function handleXLFile(file){
+  if(!file)return;
+  document.getElementById('xl-status').textContent='Procesando '+file.name+'…';
+  const reader=new FileReader();
+  reader.onload=function(e){try{const wb=XLSX.read(e.target.result,{type:'array'});const sn=wb.SheetNames[0];const ws=wb.Sheets[sn];const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});parseCartera(raw,sn);document.getElementById('xl-status').textContent='✅ '+file.name+' importado — Hoja: '+sn;}catch(err){document.getElementById('xl-status').textContent='❌ Error: '+err.message;}};
+  reader.readAsArrayBuffer(file);
+}
+function parseCartera(raw,sn){
+  carteraData=[];
+  for(let i=3;i<raw.length;i++){const r=raw[i];if(!r[0]&&!r[1])continue;carteraData.push({nro:String(r[0]||''),designacion:String(r[1]||''),vehiculo:String(r[2]||''),pn:String(r[3]||''),cant:parseFloat(r[5])||0,costoUnit:parseFloat(r[9])||0,totalCosto:parseFloat(r[10])||0,ofertaUnit:parseFloat(r[25])||0,totalOferta:parseFloat(r[26])||0,ganado:parseFloat(r[28])||0,pctLic:parseFloat(r[30])||0,proveedor:String(r[8]||'')});}
+  document.getElementById('cartera-sheet').textContent='Cartera — '+sn;
+  renderCartera();document.getElementById('cartera-content').style.display='block';
+}
+function renderCartera(){
+  const q=(document.getElementById('cartera-q')?.value||'').toLowerCase();
+  const data=q?carteraData.filter(r=>r.designacion.toLowerCase().includes(q)||r.vehiculo.toLowerCase().includes(q)||r.proveedor.toLowerCase().includes(q)):carteraData;
+  const tc=data.reduce((s,r)=>s+(r.totalCosto||0),0),to=data.reduce((s,r)=>s+(r.totalOferta||0),0),tg=data.reduce((s,r)=>s+(r.ganado||0),0);
+  document.getElementById('cartera-summary').innerHTML=`<div class="sum-chip"><div class="sc-lbl">Ítems</div><div class="sc-val sv-cyan">${data.length}</div></div><div class="sum-chip"><div class="sc-lbl">Total Costo</div><div class="sc-val sv-red">${fARS(tc)}</div></div><div class="sum-chip"><div class="sc-lbl">Total Oferta</div><div class="sc-val sv-cyan">${fARS(to)}</div></div><div class="sum-chip"><div class="sc-lbl">Ganancia</div><div class="sc-val sv-green">${fARS(tg)}</div></div>`;
+  document.getElementById('cartera-tbody').innerHTML=data.length?data.map(r=>`<tr><td style="font-family:'DM Mono',monospace;font-size:10.5px">${r.nro}</td><td style="max-width:200px;font-size:12px">${r.designacion.slice(0,70)}</td><td style="font-size:11.5px;color:var(--text-3)">${r.vehiculo.slice(0,25)}</td><td style="font-family:'DM Mono',monospace;font-size:10.5px">${r.pn}</td><td style="text-align:center">${r.cant||'—'}</td><td class="money money-costo">${r.costoUnit?fARS(r.costoUnit):'—'}</td><td class="money money-costo">${r.totalCosto?fARS(r.totalCosto):'—'}</td><td class="money money-oferta">${r.ofertaUnit?fARS(r.ofertaUnit):'—'}</td><td class="money money-oferta">${r.totalOferta?fARS(r.totalOferta):'—'}</td><td class="money money-ganancia">${r.ganado?fARS(r.ganado):'—'}</td><td style="font-family:'DM Mono',monospace;font-size:11px">${r.pctLic?r.pctLic+'%':'—'}</td><td style="font-size:11.5px;color:var(--text-3)">${r.proveedor}</td></tr>`).join(''):`<tr><td colspan="12"><div class="empty">Sin datos</div></td></tr>`;
+}
+function filterCartera(){renderCartera();}
+function exportCarteraCSV(){if(!carteraData.length)return;const h=['NRO','Designación','Vehículo','P/N','Cant','Costo Unit','Total Costo','Oferta Unit','Total Oferta','Ganancia','%Lic','Proveedor'];const rows=carteraData.map(r=>[r.nro,`"${r.designacion}"`,`"${r.vehiculo}"`,r.pn,r.cant,r.costoUnit,r.totalCosto,r.ofertaUnit,r.totalOferta,r.ganado,r.pctLic,r.proveedor].join(','));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[h.join(','),...rows].join('\n')],{type:'text/csv'}));a.download='cartera-sas.csv';a.click();}
+
+/* ═══ COMPRAR ═══ */
+const KWS=['repuestos aeronáuticos','turbinas','tren de aterrizaje','aviónica','filtros hidráulicos','mantenimiento aeronaves','Boeing','Airbus','Pratt & Whitney','neumáticos','hélices'];
 let activeKW=null;
 function renderCmp(){
   document.getElementById('kw-cloud').innerHTML=KWS.map(k=>`<span class="kw${activeKW===k?' active':''}" onclick="selKW('${k}')">${k}</span>`).join('');
@@ -1347,48 +1290,70 @@ function selKW(k){activeKW=activeKW===k?null:k;document.getElementById('cmp-q').
 function buscarCmp(){buildLinks(document.getElementById('cmp-q').value.trim()||'repuestos aeronáuticos');}
 function buildLinks(q){
   const base='https://comprar.gob.ar/Compras.aspx?qs=';
-  const links=[
-    {label:`Buscar: "${q}"`,url:base+encodeURIComponent(q),icon:'🔍'},
-    {label:'Repuestos aeronáuticos',url:base+encodeURIComponent('repuestos aeronauticos'),icon:'📋'},
-    {label:'Aviación y aeronaves',url:base+encodeURIComponent('aviacion aeronave'),icon:'📋'},
-    {label:'Turbinas y motores',url:base+encodeURIComponent('turbinas motores aeronauticos'),icon:'📋'},
-    {label:'Mantenimiento de aeronaves',url:base+encodeURIComponent('mantenimiento aeronaves'),icon:'📋'},
-    {label:'Aviónica e instrumentos',url:base+encodeURIComponent('avionica instrumentos vuelo'),icon:'📋'},
-  ];
-  document.getElementById('cmp-results').innerHTML=links.map(l=>`<div class="link-item" onclick="window.open('${l.url}','_blank')">${l.icon} <span class="link-label">${l.label}</span><span class="link-arrow">→</span></div>`).join('');
+  const links=[{label:`Buscar: "${q}"`,url:base+encodeURIComponent(q),icon:'🔍'},{label:'🔎 Búsqueda avanzada',url:'https://comprar.gob.ar/BuscarAvanzado.aspx',icon:'⚙️'},{label:'Repuestos aeronáuticos',url:base+encodeURIComponent('repuestos aeronauticos'),icon:'📋'},{label:'Neumáticos y ruedas',url:base+encodeURIComponent('neumaticos'),icon:'📋'},{label:'Turbinas y motores',url:base+encodeURIComponent('turbinas motores aeronauticos'),icon:'📋'},{label:'Mantenimiento aeronaves',url:base+encodeURIComponent('mantenimiento aeronaves'),icon:'📋'},{label:'Aviónica e instrumentos',url:base+encodeURIComponent('avionica instrumentos'),icon:'📋'}];
+  document.getElementById('cmp-results').innerHTML=links.map(l=>`<div class="link-item" onclick="window.open('${l.url}','_blank')">${l.icon} <span style="flex:1">${l.label}</span><span style="color:var(--text-3);font-size:11.5px">→</span></div>`).join('');
 }
 
-/* ══════════════════════════════════════════
-   CONTACTOS
-══════════════════════════════════════════ */
+/* ═══ CONTACTOS ═══ */
 function renderCons(){
   const q=(document.getElementById('con-search')?.value||'').toLowerCase();
-  const data=q?S.cons.filter(c=>c.nombre.toLowerCase().includes(q)||c.empresa.toLowerCase().includes(q)||c.rol.toLowerCase().includes(q)):S.cons;
-  document.getElementById('con-list').innerHTML=data.length
-    ?data.map((c,i)=>`<div class="contact-item"><div class="c-avatar" style="background:${avBg(c.nombre)};color:${avFg(c.nombre)}">${initials(c.nombre)}</div><div style="flex:1"><div class="c-name">${c.nombre}</div><div class="c-sub">${c.rol} · ${c.empresa}</div><div class="c-contact">${[c.email,c.tel].filter(Boolean).join(' · ')}</div>${c.notas?`<div class="c-contact">${c.notas}</div>`:''}</div><span class="badge badge-muted" style="flex-shrink:0">${c.tipo}</span><button class="btn btn-danger btn-sm" onclick="delCon(${i})">✕</button></div>`).join('')
-    :`<div class="empty"><div class="empty-icon">◎</div>Sin contactos</div>`;
+  const data=q?S.cons.filter(c=>c.nombre.toLowerCase().includes(q)||c.empresa.toLowerCase().includes(q)):S.cons;
+  document.getElementById('con-list').innerHTML=data.length?data.map((c,i)=>`<div class="con-item"><div class="c-av" style="background:${avBg(c.nombre)};color:${avFg(c.nombre)}">${ini(c.nombre)}</div><div style="flex:1"><div class="c-name">${c.nombre}</div><div class="c-sub">${c.rol} · ${c.empresa}</div><div class="c-mono">${[c.email,c.tel].filter(Boolean).join(' · ')}</div></div><span class="badge b-muted">${c.tipo}</span><button class="btn btn-danger btn-sm" onclick="delCon(${i})">✕</button></div>`).join(''):`<div class="empty">Sin contactos</div>`;
 }
 function saveCon(){
-  const n=document.getElementById('c-nombre').value.trim();
-  if(!n)return alert('Ingresá el nombre.');
+  const n=document.getElementById('c-nombre').value.trim();if(!n)return alert('Ingresá el nombre.');
   S.cons.push({nombre:n,empresa:document.getElementById('c-empresa').value,rol:document.getElementById('c-rol').value,tipo:document.getElementById('c-tipo').value,email:document.getElementById('c-email').value,tel:document.getElementById('c-tel').value,notas:document.getElementById('c-notas').value});
-  save();closeM('m-contacto');renderCons();
-  ['c-nombre','c-empresa','c-rol','c-email','c-tel','c-notas'].forEach(id=>document.getElementById(id).value='');
+  save();closeM('m-contacto');renderCons();['c-nombre','c-empresa','c-rol','c-email','c-tel','c-notas'].forEach(id=>document.getElementById(id).value='');
 }
 function delCon(i){if(!confirm('¿Eliminar?'))return;S.cons.splice(i,1);save();renderCons();}
 
-/* ══════════════════════════════════════════
-   CLOCK
-══════════════════════════════════════════ */
-function tick(){
-  const now=new Date();
-  const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  document.getElementById('sb-date').textContent=`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
-  document.getElementById('sb-time').textContent=now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+/* ═══ VOICE ═══ */
+let recog=null,isL=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function speak(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-AR';u.rate=1.05;window.speechSynthesis.speak(u);}
+function showToast(msg,dur=3200,lt=false){const t=document.getElementById('vtoast');document.getElementById('tmsg').textContent=msg;t.classList.toggle('lt',lt);t.classList.add('show');if(!lt)setTimeout(()=>t.classList.remove('show'),dur);}
+function hideToast(){document.getElementById('vtoast').classList.remove('show');}
+function setListUI(on){isL=on;document.getElementById('sb-vbtn').classList.toggle('listening',on);document.getElementById('topbar-mic').classList.toggle('listening',on);const orb=document.getElementById('vm-orb');orb.classList.toggle('listening',on);orb.textContent=on?'🔴':'🎙️';}
+function toggleVM(){const m=document.getElementById('vm-overlay');if(m.classList.contains('open')){closeVM();}else{m.classList.add('open');}}
+function closeVM(){document.getElementById('vm-overlay').classList.remove('open');if(recog){try{recog.stop();}catch(e){}}setListUI(false);hideToast();}
+function startListening(){
+  if(!SR){showToast('⚠️ Usá Chrome o Edge para reconocimiento de voz');return;}
+  if(isL){try{recog.stop();}catch(e){}return;}
+  recog=new SR();recog.lang='es-AR';recog.continuous=false;recog.interimResults=true;
+  recog.onstart=()=>{setListUI(true);document.getElementById('vm-transcript').textContent='Escuchando…';showToast('Escuchando…',99999,true);};
+  recog.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal){processCmd(e.results[i][0].transcript.trim());}else{document.getElementById('vm-transcript').textContent=e.results[i][0].transcript;}}};
+  recog.onerror=(e)=>{setListUI(false);hideToast();showToast('⚠️ Error: '+e.error);};
+  recog.onend=()=>{setListUI(false);hideToast();};
+  recog.start();
 }
+function simCmd(t){document.getElementById('vm-transcript').textContent='"'+t+'"';processCmd(t);}
+function processCmd(text){
+  hideToast();const t=text.toLowerCase();
+  document.getElementById('vm-transcript').textContent='"'+text+'"';
+  // GCAL command
+  if(t.includes('sincronizar')||t.includes('google calendar')||t.includes('sincronizar calendar')){syncAllEventsToGCal();speak('Sincronizando con Google Calendar');return;}
+  const navMap={dashboard:['dashboard','inicio'],agenda:['agenda','calendario'],licitaciones:['licitaciones'],alertas:['alertas'],carpetas:['carpetas','carpeta'],repuestos:['repuestos','base de repuestos'],cartera:['cartera','excel'],comprar:['comprar'],contactos:['contactos','proveedores']};
+  for(const[sec,kws]of Object.entries(navMap)){if(kws.some(k=>t.includes(k))&&(t.includes('ir')||t.includes('abrir')||t.includes('mostrar')||t.includes('ver'))){const btn=document.querySelector(`.nav-item[onclick*="'${sec}'"]`);go(sec,btn);speak('Yendo a '+TITLES[sec]);showToast('→ '+TITLES[sec]);return;}}
+  if(t.includes('agenda')||t.includes('reunión')||t.includes('agendar')){
+    const tipo=t.includes('tarea')?'Tarea':t.includes('llamada')?'Llamada':'Reunión';
+    const td=tod();let fecha=td;
+    if(t.includes('mañana'))fecha=new Date(Date.now()+864e5).toISOString().slice(0,10);
+    let hora='09:00';const hm=t.match(/(\d{1,2})(?::(\d{2}))?\s*(?:hs|horas)?/);if(hm){const h=parseInt(hm[1]);if(h>=1&&h<=23)hora=String(h).padStart(2,'0')+':'+(hm[2]||'00');}
+    let titulo=text.replace(/agenda|agendar|reunión|reunion|tarea|llamada|para|mañana|hoy|a las|hs/gi,'').replace(/\s+/g,' ').trim()||tipo;titulo=titulo.charAt(0).toUpperCase()+titulo.slice(1);
+    showQuickM('Confirmar '+tipo,`<div class="form-group"><label class="form-label">Tipo</label><select id="q-tipo"><option${tipo==='Reunión'?' selected':''}>Reunión</option><option${tipo==='Tarea'?' selected':''}>Tarea</option><option>Llamada</option></select></div><div class="form-group"><label class="form-label">Título</label><input type="text" id="q-titulo" value="${titulo}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><div class="form-group"><label class="form-label">Fecha</label><input type="date" id="q-fecha" value="${fecha}"></div><div class="form-group"><label class="form-label">Hora</label><input type="time" id="q-hora" value="${hora}"></div></div>`,async()=>{const ev={tipo:document.getElementById('q-tipo').value,titulo:document.getElementById('q-titulo').value,fecha:document.getElementById('q-fecha').value,hora:document.getElementById('q-hora').value,notas:''};S.eventos.push(ev);save();renderDash();if(gcalReady)await addToGCal(ev.titulo,ev.fecha,ev.hora,'');speak('Evento guardado');showToast('✅ Evento guardado'+(gcalReady?' + Google Calendar':''));closeM('m-quick');closeVM();});
+    speak('Confirmá los datos');return;
+  }
+  if(t.includes('buscar')){let q=text.replace(/buscar|en comprar|comprar/gi,'').trim()||'repuestos aeronáuticos';showQuickM('Buscar en Comprar',`<input type="text" id="q-q" value="${q}">`,()=>{window.open('https://comprar.gob.ar/Compras.aspx?qs='+encodeURIComponent(document.getElementById('q-q').value),'_blank');closeM('m-quick');closeVM();});return;}
+  if(t.includes('alerta')||t.includes('vencimiento')){let titulo=text.replace(/nueva alerta|alerta|vencimiento|recordatorio|crear/gi,'').trim();titulo=titulo.charAt(0).toUpperCase()+titulo.slice(1)||'Nueva alerta';showQuickM('Nueva Alerta',`<div class="form-group"><label class="form-label">Título</label><input type="text" id="q-at" value="${titulo}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><div class="form-group"><label class="form-label">Fecha</label><input type="date" id="q-af" value="${new Date(Date.now()+864e5).toISOString().slice(0,10)}"></div><div class="form-group"><label class="form-label">Prioridad</label><select id="q-ap"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option></select></div></div>`,()=>{S.alertas.push({tipo:'Vencimiento de plazo',titulo:document.getElementById('q-at').value,fecha:document.getElementById('q-af').value,prio:document.getElementById('q-ap').value,desc:'',done:false});save();renderDash();speak('Alerta guardada');showToast('✅ Alerta creada');closeM('m-quick');closeVM();});return;}
+  speak('No entendí. Podés decir: ir a carpetas, agendar reunión, sincronizar Google Calendar.');
+  showToast('🤔 No entendí el comando');
+}
+function showQuickM(title,body,onConfirm){document.getElementById('q-title').textContent=title;document.getElementById('q-body').innerHTML=body;document.getElementById('q-confirm').onclick=onConfirm;openM('m-quick');}
+
+/* ═══ CLOCK ═══ */
+function tick(){const now=new Date();const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];document.getElementById('sb-date').textContent=`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;document.getElementById('sb-time').textContent=now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});}
 tick();setInterval(tick,30000);
-renderDash();
+if(sessionStorage.getItem('sas_auth'))renderDash();
 </script>
 </body>
 </html>
