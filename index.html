@@ -600,25 +600,65 @@ tbody tr:hover td{background:var(--surface-2);}
   <div class="modal">
     <div class="modal-head"><h3>Nueva Carpeta de Licitación</h3><button class="close-btn" onclick="closeM('m-new-folder')">✕</button></div>
     <div class="modal-body">
-      <div style="background:var(--cyan-bg);border:1px solid var(--cyan-bg2);border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:var(--cyan-dim)">💡 Ingresá el número de proceso tal como aparece en Comprar.gob.ar</div>
-      <div class="form-group"><label class="form-label">N° Proceso / Licitación *</label><input type="text" id="f-id" placeholder="84/147-0281-LPR26"></div>
-      <div class="form-group"><label class="form-label">Descripción / Objeto</label><input type="text" id="f-desc"></div>
-      <div class="form-group"><label class="form-label">Organismo / UOC</label><input type="text" id="f-org"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
-        <div class="form-group"><label class="form-label">Fecha apertura</label><input type="date" id="f-apertura"></div>
-        <div class="form-group"><label class="form-label">Fin de consultas</label><input type="date" id="f-consultas"></div>
+
+      <!-- STEP 1: Upload PDF -->
+      <div id="folder-step1">
+        <div style="background:var(--cyan-bg);border:1px solid var(--cyan-bg2);border-radius:9px;padding:13px 15px;margin-bottom:16px;font-size:13px;color:var(--cyan-dim);text-align:center">
+          <div style="font-size:22px;margin-bottom:6px">📄</div>
+          <div style="font-weight:600;margin-bottom:3px">Subí el PDF del pliego</div>
+          <div style="font-size:12px;opacity:.8">La app extrae todos los datos automáticamente</div>
+        </div>
+        <div class="upload-zone" id="pdf-folder-drop"
+          onclick="document.getElementById('pdf-folder-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleFolderPDFDrop(event)">
+          <div class="uz-icon">📋</div>
+          <div class="uz-text">Arrastrá el pliego PDF aquí o hacé clic</div>
+          <div class="uz-sub">Comprar.gob.ar · Formato PDF</div>
+        </div>
+        <input type="file" id="pdf-folder-input" accept=".pdf" style="display:none" onchange="handleFolderPDFFile(this.files[0])">
+        <div id="pdf-parse-status" style="margin-top:10px;font-size:12.5px;color:var(--text-3);text-align:center"></div>
+        <div style="margin-top:14px;text-align:center">
+          <button class="btn btn-ghost btn-sm" onclick="skipPDFStep()">Completar manualmente →</button>
+        </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
-        <div class="form-group"><label class="form-label">Duración contrato</label><input type="text" id="f-duracion" placeholder="Ej: 3 meses"></div>
-        <div class="form-group"><label class="form-label">Monto estimado (ARS)</label><input type="number" id="f-monto"></div>
+
+      <!-- STEP 2: Review extracted data -->
+      <div id="folder-step2" style="display:none">
+        <div style="background:var(--green-bg);border:1px solid #b8ddc9;border-radius:9px;padding:10px 13px;margin-bottom:14px;font-size:12.5px;color:var(--green);display:flex;align-items:center;gap:8px">
+          ✅ <strong>Datos extraídos del pliego. Revisá y confirmá.</strong>
+        </div>
+        <div class="form-group"><label class="form-label">N° Proceso / Licitación *</label><input type="text" id="f-id" placeholder="84/147-0281-LPR26"></div>
+        <div class="form-group"><label class="form-label">Descripción / Objeto</label><input type="text" id="f-desc"></div>
+        <div class="form-group"><label class="form-label">Organismo / UOC</label><input type="text" id="f-org"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <div class="form-group"><label class="form-label">Fecha apertura</label><input type="date" id="f-apertura"></div>
+          <div class="form-group"><label class="form-label">Fin de consultas</label><input type="date" id="f-consultas"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <div class="form-group"><label class="form-label">Duración contrato</label><input type="text" id="f-duracion" placeholder="Ej: 3 meses"></div>
+          <div class="form-group"><label class="form-label">Monto estimado (ARS)</label><input type="number" id="f-monto"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Procedimiento</label>
+          <select id="f-proc"><option>Licitación Pública</option><option>Licitación Privada</option><option>Contratación Directa</option><option>Concurso de Precios</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Lugar de entrega</label><input type="text" id="f-lugar"></div>
+        <!-- Renglones detectados -->
+        <div id="f-rengls-preview" style="display:none">
+          <div style="font-size:11.5px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Renglones detectados</div>
+          <div id="f-rengls-list" style="background:var(--surface-2);border-radius:8px;padding:10px;font-size:12.5px"></div>
+        </div>
+        <div style="background:var(--amber-bg);border:1px solid #f0de9a;border-radius:9px;padding:10px 13px;font-size:12px;color:var(--amber);margin-top:12px">
+          🔔 Se agendarán automáticamente: apertura, fin de consultas y alerta 48hs antes en Google Calendar.
+        </div>
       </div>
-      <div class="form-group"><label class="form-label">Procedimiento</label><select id="f-proc"><option>Licitación Pública</option><option>Licitación Privada</option><option>Contratación Directa</option><option>Concurso de Precios</option></select></div>
-      <div class="form-group"><label class="form-label">Lugar de entrega</label><input type="text" id="f-lugar"></div>
-      <div style="background:var(--amber-bg);border:1px solid #f0de9a;border-radius:9px;padding:11px 13px;font-size:12px;color:var(--amber)">
-        🔔 Al crear la carpeta se agendarán automáticamente en SAS y en Google Calendar: apertura, fin de consultas y alerta 48hs antes.
-      </div>
+
     </div>
-    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeM('m-new-folder')">Cancelar</button><button class="btn btn-primary" onclick="saveFolder()">Crear carpeta</button></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="resetFolderModal()">Cancelar</button>
+      <button class="btn btn-primary" id="folder-confirm-btn" style="display:none" onclick="saveFolder()">✓ Crear carpeta</button>
+    </div>
   </div>
 </div>
 
@@ -1011,6 +1051,109 @@ function saveAlerta(){
 function togAl(i){S.alertas[i].done=!S.alertas[i].done;save();renderAl();renderDash();}
 function delAl(i){if(!confirm('¿Eliminar?'))return;S.alertas.splice(i,1);save();renderAl();renderDash();}
 
+/* ═══ PDF FOLDER PARSER ═══ */
+let folderPDFFile=null,parsedRengls=[];
+
+function resetFolderModal(){
+  closeM('m-new-folder');
+  document.getElementById('folder-step1').style.display='block';
+  document.getElementById('folder-step2').style.display='none';
+  document.getElementById('folder-confirm-btn').style.display='none';
+  document.getElementById('pdf-parse-status').textContent='';
+  document.getElementById('pdf-folder-input').value='';
+  folderPDFFile=null;parsedRengls=[];
+}
+function skipPDFStep(){
+  document.getElementById('folder-step1').style.display='none';
+  document.getElementById('folder-step2').style.display='block';
+  document.getElementById('folder-confirm-btn').style.display='inline-flex';
+  ['f-id','f-desc','f-org','f-apertura','f-consultas','f-duracion','f-monto','f-lugar'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function handleFolderPDFDrop(e){
+  e.preventDefault();document.getElementById('pdf-folder-drop').classList.remove('drag');
+  const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')handleFolderPDFFile(f);
+  else showToast('⚠️ Por favor subí un archivo PDF');
+}
+function handleFolderPDFFile(file){
+  if(!file)return;
+  folderPDFFile=file;
+  document.getElementById('pdf-parse-status').innerHTML='<span style="color:var(--cyan)">⏳ Leyendo PDF...</span>';
+  const reader=new FileReader();
+  reader.onload=function(e){extractPDFText(e.target.result,file.name);};
+  reader.readAsArrayBuffer(file);
+}
+async function extractPDFText(arrayBuffer,fileName){
+  try{
+    if(!window.pdfjsLib){
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';resolve();};
+        s.onerror=reject;document.head.appendChild(s);
+      });
+    }
+    const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+    let fullText='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const content=await page.getTextContent();
+      fullText+=content.items.map(item=>item.str).join(' ')+'\n';
+    }
+    parsePDFContent(fullText);
+  }catch(err){
+    document.getElementById('pdf-parse-status').innerHTML='<span style="color:var(--red)">❌ Error al leer el PDF. Completá los datos manualmente.</span>';
+    skipPDFStep();
+  }
+}
+function parsePDFContent(text){
+  const data={id:'',desc:'',org:'',apertura:'',consultas:'',duracion:'',monto:'',proc:'Licitación Privada',lugar:''};
+  parsedRengls=[];
+  // N° Proceso
+  const pm=text.match(/N[uo]mero de proceso\s*[\n\r\s]*([A-Z0-9\/\-\.]+)/i)||text.match(/(\d{2,3}\/\d{2,3}-\d{4}-[A-Z]{2,5}\d{2,3})/)||text.match(/N[°o]\s*proceso\s*[:\s]+([A-Z0-9\/\-]+)/i);
+  if(pm)data.id=pm[1].trim();
+  // Descripcion
+  const dm=text.match(/Nombre descriptivo del proceso\s*[\n\r]+([^\n\r]{10,200})/i)||text.match(/Objeto de la contrataci.n\s*[\n\r]+([^\n\r]{10,200})/i)||text.match(/Adquisici.n de ([^\n\r]{10,150})/i);
+  if(dm)data.desc=dm[1].trim().slice(0,200);
+  // Organismo
+  const om=text.match(/Unidad Operativa de Contrataciones\s*[\n\r]+([^\n\r]{5,100})/i)||text.match(/ESCUELA\s+MILITAR[^\n\r]*/i);
+  if(om)data.org=(om[1]||om[0]||'').trim().slice(0,100);
+  // Procedimiento
+  if(text.match(/Licitaci.n P.blica/i))data.proc='Licitación Pública';
+  else if(text.match(/Licitaci.n Privada/i))data.proc='Licitación Privada';
+  else if(text.match(/Contrataci.n Directa/i))data.proc='Contratación Directa';
+  else if(text.match(/Concurso de Precios/i))data.proc='Concurso de Precios';
+  // Apertura
+  const am=text.match(/acto de apertura\s*[\n\r\s]*(\d{2}\/\d{2}\/\d{4})/i)||text.match(/apertura\s*[\n\r\s]*(\d{2}\/\d{2}\/\d{4})/i);
+  if(am){const p=am[1].split('/');data.apertura=p[2]+'-'+p[1]+'-'+p[0];}
+  // Fin consultas
+  const cm=text.match(/final de consultas\s*[\n\r\s]*(\d{2}\/\d{2}\/\d{4})/i)||text.match(/fin.*?consultas\s*[\n\r\s]*(\d{2}\/\d{2}\/\d{4})/i);
+  if(cm){const p=cm[1].split('/');data.consultas=p[2]+'-'+p[1]+'-'+p[0];}
+  // Duracion
+  const dur=text.match(/Duraci.n del contrato\s*[\n\r\s]*(\d+\s+[Mm]eses?)/i)||text.match(/(\d+)\s+[Mm]eses?\s+de\s+duraci/i);
+  if(dur)data.duracion=dur[1].trim();
+  // Lugar
+  const lm=text.match(/Lugar de recepci.n[^\n\r]*[\n\r\s]+([A-Z][^\n\r]{5,80})/i)||text.match(/RUTA[^\n\r,]+,\s*([A-Z][^\n\r]{5,60})/i);
+  if(lm)data.lugar=(lm[1]||'').trim().slice(0,100);
+  // Fill form
+  ['id','desc','org','apertura','consultas','duracion','monto','lugar'].forEach(k=>{
+    const el=document.getElementById('f-'+k);if(el&&data[k])el.value=data[k];
+  });
+  if(document.getElementById('f-proc'))document.getElementById('f-proc').value=data.proc;
+  // Renglones
+  const rl=[...text.matchAll(/(\d+)\s+[\d\.]+\s+[\d\.\-]+\s+([A-Z][^\n\r]{10,100})\s+(\d+[.,]?\d*)\s+SERVICIO/gi)];
+  rl.forEach(m=>parsedRengls.push({num:parseInt(m[1]),desc:m[2].trim(),pn:'',cant:parseFloat(m[3])||1,unit:'UN',provs:[]}));
+  if(parsedRengls.length){
+    document.getElementById('f-rengls-preview').style.display='block';
+    document.getElementById('f-rengls-list').innerHTML=parsedRengls.map(r=>`<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border-soft)"><div style="background:var(--navy);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${r.num}</div><div style="flex:1;font-size:12.5px">${r.desc}</div><div style="font-size:11px;color:var(--text-3)">x${r.cant}</div></div>`).join('');
+  }
+  document.getElementById('folder-step1').style.display='none';
+  document.getElementById('folder-step2').style.display='block';
+  document.getElementById('folder-confirm-btn').style.display='inline-flex';
+  document.getElementById('pdf-parse-status').textContent='';
+  const found=[data.id,data.desc,data.org,data.apertura].filter(Boolean).length;
+  showToast('✅ PDF leído — '+found+' campos detectados'+(parsedRengls.length?' · '+parsedRengls.length+' renglones':''));
+}
+
 /* ═══ CARPETAS ═══ */
 const FE_ICON={'En preparación':'📝','Oferta presentada':'📤','Adjudicada':'🏆','No adjudicada':'❌','Facturada':'💰'};
 function renderFolders(){
@@ -1036,7 +1179,7 @@ async function saveFolder(){
   const consultas=document.getElementById('f-consultas').value;
   const desc=document.getElementById('f-desc').value;
   const org=document.getElementById('f-org').value;
-  const f={id,desc,org,apertura,consultas,duracion:document.getElementById('f-duracion').value,monto:document.getElementById('f-monto').value,proc:document.getElementById('f-proc').value,lugar:document.getElementById('f-lugar').value,estado:'En preparación',docs:{pliego:[],oferta:[],adjud:[],fact:[]},rengls:[],notas:''};
+  const f={id,desc,org,apertura,consultas,duracion:document.getElementById('f-duracion').value,monto:document.getElementById('f-monto').value,proc:document.getElementById('f-proc').value,lugar:document.getElementById('f-lugar').value,estado:'En preparación',docs:{pliego:[],oferta:[],adjud:[],fact:[]},rengls:parsedRengls&&parsedRengls.length?[...parsedRengls]:[],notas:'',pdfName:folderPDFFile?folderPDFFile.name:''};
   S.folders.push(f);
   // Auto-agenda
   if(apertura){
@@ -1050,9 +1193,8 @@ async function saveFolder(){
     S.eventos.push({tipo:'Plazo',titulo:`❓ Fin consultas ${id}`,fecha:consultas,hora:'07:00',notas:'Último día para hacer consultas'});
     if(gcalReady){await addToGCal(`❓ Fin consultas ${id}`,consultas,'07:00','Último día para hacer consultas');}
   }
-  save();closeM('m-new-folder');renderFolders();renderDash();
+  save();resetFolderModal();renderFolders();renderDash();
   showToast('✅ Carpeta creada'+(gcalReady?' + eventos en Google Calendar':''));
-  ['f-id','f-desc','f-org','f-apertura','f-consultas','f-duracion','f-monto','f-lugar'].forEach(id=>document.getElementById(id).value='');
 }
 
 function delFolder(i){if(!confirm('¿Eliminar carpeta?'))return;S.folders.splice(i,1);save();renderFolders();}
