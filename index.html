@@ -1344,7 +1344,128 @@ function handleDoc(tab,files){
   const f=S.folders[curFI];
   if(!f.docs)f.docs={pliego:[],oferta:[],adjud:[],fact:[]};
   Array.from(files).forEach(file=>f.docs[tab].push({name:file.name,date:new Date().toLocaleDateString('es-AR')}));
-  save();renderDocTabs(f);showToast(`✅ ${files.length} archivo(s) guardado(s)`);
+  save();renderDocTabs(f);
+  // If pliego/ET PDF → auto-extract renglones
+  const pdfs=Array.from(files).filter(fl=>fl.type==='application/pdf');
+  if(tab==='pliego'&&pdfs.length){
+    showToast('📄 Leyendo PDF para detectar renglones...',5000,true);
+    readPDFForRengls(pdfs[0]);
+  } else {
+    showToast('✅ '+files.length+' archivo(s) guardado(s)');
+  }
+}
+
+async function readPDFForRengls(file){
+  try{
+    if(!window.pdfjsLib){
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';resolve();};
+        s.onerror=reject;document.head.appendChild(s);
+      });
+    }
+    const ab=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    let text='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const content=await page.getTextContent();
+      text+=content.items.map(it=>it.str).join(' ')+'\n';
+    }
+    const detected=detectRenglonsFromText(text);
+    hideToast();
+    if(detected.length){
+      showRenglonImportModal(detected);
+    } else {
+      showToast('✅ PDF guardado — no se detectaron renglones automáticamente');
+    }
+  }catch(e){
+    hideToast();
+    showToast('✅ PDF guardado');
+  }
+}
+
+function detectRenglonsFromText(text){
+  const result=[];
+  // Pattern 1: numbered rows with description and quantity
+  const p1=[...text.matchAll(/(\d{1,3})\s+[\d\.]+\s+[\d\.\-]+\s+([A-ZÁÉÍÓÚÑ][^\n\r]{8,120})\s+(\d+[.,]?\d*)\s+(?:SERVICIO|UNIDAD|UN|KG|HS|LITROS?)/gi)];
+  p1.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim().replace(/\s+/g,' '),pn:'',cant:parseFloat(m[3].replace(',','.'))||1,unit:'UN'}));
+  // Pattern 2: Renglón keyword
+  if(!result.length){
+    const p2=[...text.matchAll(/RENGL[OÓ]N\s*(\d+)[^\n\r]*[\n\r]+([^\n\r]{10,120})/gi)];
+    p2.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim(),pn:'',cant:1,unit:'UN'}));
+  }
+  // Pattern 3: MANT. Y REP. style
+  if(!result.length){
+    const p3=[...text.matchAll(/(\d{1,2})\s+[\d\.]+\s+[\d\.\-]+\s+(MANT\.?[^\n\r]{5,100})\s+(\d+[.,]?\d*)/gi)];
+    p3.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim(),pn:'',cant:parseFloat(m[3])||1,unit:'SERVICIO'}));
+  }
+  return result.slice(0,50);
+}
+
+function showRenglonImportModal(detected){
+  // Match against parts base
+  const enriched=detected.map(r=>{
+    const match=S.parts.find(p=>
+      p.desc.toLowerCase().split(' ').some(w=>w.length>4&&r.desc.toLowerCase().includes(w))||
+      (p.pn&&r.pn&&p.pn.toLowerCase()===r.pn.toLowerCase())
+    );
+    return{...r,match};
+  });
+
+  const rows=enriched.map((r,i)=>`
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="background:var(--navy);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${r.num}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${r.desc.slice(0,80)}${r.desc.length>80?'…':''}</div>
+          <div style="font-size:11px;color:var(--text-3)">Cant: ${r.cant} ${r.unit}</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+          <input type="checkbox" id="rl-chk-${i}" checked style="width:auto"> Importar
+        </label>
+      </div>
+      ${r.match?`<div style="background:var(--amber-bg);border:1px solid #f0de9a;border-radius:7px;padding:7px 10px;font-size:12px;color:var(--amber)">
+        💡 <strong>Historial encontrado:</strong> ${r.match.desc} · Costo: ${fARS(r.match.costo)} · ${r.match.prov}
+        ${r.match.link?`<a href="${r.match.link}" target="_blank" style="color:var(--cyan);margin-left:5px">↗ Ver proveedor</a>`:''}
+      </div>`:'<div style="font-size:11.5px;color:var(--text-3)">Sin historial en base de repuestos</div>'}
+    </div>`).join('');
+
+  showQuickM(
+    '🔩 Renglones detectados en el PDF',
+    `<div style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">Se encontraron <strong>${detected.length} renglones</strong>. Los que tienen historial traen el precio sugerido automáticamente.</div>
+     <div style="max-height:50vh;overflow-y:auto">${rows}</div>`,
+    ()=>{
+      const f=S.folders[curFI];
+      if(!f.rengls)f.rengls=[];
+      enriched.forEach((r,i)=>{
+        const chk=document.getElementById('rl-chk-'+i);
+        if(!chk||!chk.checked)return;
+        // Build provs from history match
+        const provs=r.match?[{
+          nombre:r.match.prov,
+          costo:r.match.costo,
+          oferta:Math.round(r.match.costo*1.35),
+          link:r.match.link||''
+        }]:[];
+        // Check if renglón already exists
+        const exists=f.rengls.find(ex=>ex.num===r.num);
+        if(!exists){
+          f.rengls.push({num:r.num,desc:r.desc,pn:r.pn,cant:r.cant,unit:r.unit,provs});
+          // Update parts base if match found
+          if(r.match&&!r.match.hist)r.match.hist=[];
+          if(r.match)r.match.hist.push({lic:f.id,costo:r.match.costo,oferta:Math.round(r.match.costo*1.35),fecha:new Date().toISOString().slice(0,7)});
+        }
+      });
+      save();
+      renderRengls(f);
+      renderCostos(f);
+      closeM('m-quick');
+      const imported=enriched.filter((_,i)=>{const c=document.getElementById('rl-chk-'+i);return c&&c.checked;}).length;
+      showToast('✅ '+imported+' renglones importados'+(enriched.some(r=>r.match)?' · con precios históricos sugeridos':''));
+    }
+  );
 }
 function renderDocTabs(f){
   ['pliego','oferta','adjud','fact'].forEach(tab=>{
