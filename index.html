@@ -1378,7 +1378,27 @@ async function readPDFForRengls(file){
     if(detected.length){
       showRenglonImportModal(detected);
     } else {
-      showToast('✅ PDF guardado — no se detectaron renglones automáticamente');
+      // Show friendly alert with instructions
+      showQuickM(
+        '📄 PDF guardado',
+        `<div style="text-align:center;padding:8px 0">
+          <div style="font-size:32px;margin-bottom:10px">🔍</div>
+          <div style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:8px">No se detectaron renglones automáticamente</div>
+          <div style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:14px">
+            El formato de este PDF es nuevo para el sistema.<br>
+            <strong>Enviá el archivo a Claude</strong> para que agregue el patrón de lectura y desde ahí se detecte solo.
+          </div>
+          <div style="background:var(--cyan-bg);border:1px solid var(--cyan-bg2);border-radius:9px;padding:12px 14px;font-size:12.5px;color:var(--cyan-dim);text-align:left">
+            <strong>Cómo reportarlo:</strong><br>
+            1. Abrí el chat con Claude<br>
+            2. Subí este PDF de ET<br>
+            3. Decile: <em>"Este PDF no detectó renglones, podés agregar el patrón?"</em><br>
+            4. Claude actualiza el index.html y lo subís a GitHub ✅
+          </div>
+        </div>`,
+        ()=>closeM('m-quick')
+      );
+      document.getElementById('q-confirm').textContent='Entendido';
     }
   }catch(e){
     hideToast();
@@ -1388,20 +1408,73 @@ async function readPDFForRengls(file){
 
 function detectRenglonsFromText(text){
   const result=[];
-  // Pattern 1: numbered rows with description and quantity
-  const p1=[...text.matchAll(/(\d{1,3})\s+[\d\.]+\s+[\d\.\-]+\s+([A-ZÁÉÍÓÚÑ][^\n\r]{8,120})\s+(\d+[.,]?\d*)\s+(?:SERVICIO|UNIDAD|UN|KG|HS|LITROS?)/gi)];
-  p1.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim().replace(/\s+/g,' '),pn:'',cant:parseFloat(m[3].replace(',','.'))||1,unit:'UN'}));
-  // Pattern 2: Renglón keyword
-  if(!result.length){
-    const p2=[...text.matchAll(/RENGL[OÓ]N\s*(\d+)[^\n\r]*[\n\r]+([^\n\r]{10,120})/gi)];
-    p2.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim(),pn:'',cant:1,unit:'UN'}));
+
+  // ── PATRÓN GNA: Tabla ET con columnas # | COMPONENTE | P/N | AERONAVE | CANT ──
+  // Ej: " 1   SERVO CONTROL REAR   AC67032   AIRBUS AS350 B2...   1"
+  const lines=text.split(/\n/);
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i];
+    const numMatch=line.match(/^\s*(\d{1,2})\s{2,}([A-ZÁÉÍÓÚÑ].{4,})/);
+    if(!numMatch)continue;
+    const num=parseInt(numMatch[1]);
+    if(num<1||num>99)continue;
+    // Acumular hasta 5 líneas para armar descripción completa
+    let rawBlock=[line];
+    for(let j=1;j<=5;j++){
+      if(i+j>=lines.length)break;
+      const next=lines[i+j];
+      if(/^\s*\d{1,2}\s{2,}[A-ZÁÉÍÓÚÑ]/.test(next))break;
+      rawBlock.push(next);
+    }
+    const block=rawBlock.join(' ').replace(/\s{2,}/g,' ');
+    // Extraer P/N: códigos tipo AC67032 / 957.12.16.201 / 78738-003 / 115.55.06.253
+    const pnMatch=block.match(/\b([A-Z]{1,4}\d{3,}[\-\.\d]*|\d{2,3}\.\d{2}\.\d{2}\.\d+|\d{5,}[\-\d]*)\b/);
+    const pn=(pnMatch&&pnMatch[1]!=='N/A')?pnMatch[1]:'';
+    // Extraer cantidad: número aislado al final o antes de aeronave
+    const cantMatch=block.match(/(?:cantidad|cant)\s*(\d+)|\s(\d{1,2})\s*(?:UNO|DOS|TRES|CUATRO|CINCO)?\s*$/i)||block.match(/\s(\d{1,2})\s*$/);
+    const cant=cantMatch?parseInt(cantMatch[1]||cantMatch[2])||1:1;
+    // Extraer aeronave
+    const avMatch=block.match(/(AIRBUS[^,\.]{0,40}|PILATUS[^,\.]{0,40}|PIPER[^,\.]{0,40}|CESSNA[^,\.]{0,40}|BELL[^,\.]{0,40})/i);
+    const aeronave=avMatch?avMatch[1].trim().slice(0,60):'';
+    // Limpiar descripción: sacar P/N, matrículas, números sueltos al final
+    let desc=block
+      .replace(numMatch[1],'')
+      .replace(pn,'')
+      .replace(/\(Matr[íi]cula[^)]*\)/gi,'')
+      .replace(/[A-Z]{1,4}\d{3,}[\-\.\d]*/g,'')
+      .replace(/\d{2,3}\.\d{2}\.\d{2}\.\d+/g,'')
+      .replace(/\bIF-\d{4}[\d\-]+[^\s]*/g,'')
+      .replace(/P[áa]gina\s+\d+\s+de\s+\d+/gi,'')
+      .replace(/\s{2,}/g,' ').trim()
+      .slice(0,120);
+    if(desc.length>4){
+      result.push({num,desc,pn,cant,unit:'UN',aeronave});
+      i+=Math.min(2,rawBlock.length-1);
+    }
   }
-  // Pattern 3: MANT. Y REP. style
+
+  // ── PATRÓN RENGLÓN Nº: "Renglón Nº 7: DESCRIPCION; cantidad 1" ──
   if(!result.length){
-    const p3=[...text.matchAll(/(\d{1,2})\s+[\d\.]+\s+[\d\.\-]+\s+(MANT\.?[^\n\r]{5,100})\s+(\d+[.,]?\d*)/gi)];
-    p3.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim(),pn:'',cant:parseFloat(m[3])||1,unit:'SERVICIO'}));
+    const p2=[...text.matchAll(/Rengl[oó]n\s*N[º°]?\s*(\d+)[:\s]+([^;\n\r]{5,150})(?:[;,]\s*cantidad\s*(\d+))?/gi)];
+    p2.forEach(m=>{
+      const num=parseInt(m[1]);
+      if(!result.find(r=>r.num===num))
+        result.push({num,desc:m[2].trim().slice(0,120),pn:'',cant:parseInt(m[3])||1,unit:'UN',aeronave:''});
+    });
   }
-  return result.slice(0,50);
+
+  // ── PATRÓN PLIEGO COMPRAR: tabla con código de gasto + SERVICIO ──
+  if(!result.length){
+    const p3=[...text.matchAll(/(\d{1,2})\s+[\d\.]+\s+[\d\.\-]+\s+([A-ZÁÉÍÓÚÑ][^\n\r]{8,100})\s+(\d+[.,]?\d*)\s+SERVICIO/gi)];
+    p3.forEach(m=>result.push({num:parseInt(m[1]),desc:m[2].trim(),pn:'',cant:parseFloat(m[3])||1,unit:'SERVICIO',aeronave:''}));
+  }
+
+  // Deduplicar y ordenar
+  const seen=new Set();
+  return result
+    .filter(r=>{if(seen.has(r.num))return false;seen.add(r.num);return true;})
+    .sort((a,b)=>a.num-b.num)
+    .slice(0,50);
 }
 
 function showRenglonImportModal(detected){
@@ -1416,20 +1489,27 @@ function showRenglonImportModal(detected){
 
   const rows=enriched.map((r,i)=>`
     <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="background:var(--navy);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${r.num}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="background:var(--navy);color:white;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${r.num}</div>
         <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">${r.desc.slice(0,80)}${r.desc.length>80?'…':''}</div>
-          <div style="font-size:11px;color:var(--text-3)">Cant: ${r.cant} ${r.unit}</div>
+          <div style="font-size:13px;font-weight:600">${r.desc.slice(0,90)}${r.desc.length>90?'…':''}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;align-items:center">
+            ${r.pn?`<span style="font-family:'DM Mono',monospace;background:var(--navy);color:white;padding:1px 6px;border-radius:4px;font-size:10.5px">${r.pn}</span>`:''}
+            <span style="font-size:11px;color:var(--text-3)">Cant: ${r.cant} ${r.unit}</span>
+            ${r.aeronave?`<span style="font-size:11px;color:var(--cyan-dim);background:var(--cyan-bg);padding:1px 6px;border-radius:4px">${r.aeronave.slice(0,45)}</span>`:''}
+          </div>
         </div>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;flex-shrink:0">
           <input type="checkbox" id="rl-chk-${i}" checked style="width:auto"> Importar
         </label>
       </div>
-      ${r.match?`<div style="background:var(--amber-bg);border:1px solid #f0de9a;border-radius:7px;padding:7px 10px;font-size:12px;color:var(--amber)">
-        💡 <strong>Historial encontrado:</strong> ${r.match.desc} · Costo: ${fARS(r.match.costo)} · ${r.match.prov}
-        ${r.match.link?`<a href="${r.match.link}" target="_blank" style="color:var(--cyan);margin-left:5px">↗ Ver proveedor</a>`:''}
-      </div>`:'<div style="font-size:11.5px;color:var(--text-3)">Sin historial en base de repuestos</div>'}
+      ${r.match
+        ?`<div style="background:var(--amber-bg);border:1px solid #f0de9a;border-radius:7px;padding:7px 10px;font-size:12px;color:var(--amber)">
+            💡 <strong>Historial encontrado:</strong> ${r.match.desc} · Costo: ${fARS(r.match.costo)} · Proveedor: ${r.match.prov}
+            ${r.match.link?`· <a href="${r.match.link}" target="_blank" style="color:var(--cyan)">↗ Ver proveedor</a>`:''}
+          </div>`
+        :`<div style="font-size:11px;color:var(--text-3);font-style:italic;padding:4px 0">Sin historial en base de repuestos — se agregará para cotizar</div>`
+      }
     </div>`).join('');
 
   showQuickM(
